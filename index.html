@@ -161,10 +161,7 @@
                      </div>
                      <p class="text-sm text-gray-300">Apne dosto ke saath code share karein.</p>
                  </div>
-                 
-                <button class="action-button primary-button" onclick="shareApp()">
-                <i class="fa-solid fa-share-nodes"></i> Share App
-                </button>
+                 <button id="share-btn" class="w-full p-3 rounded-lg btn-accent">Apna Code Share Karein</button>
                  
                  <!-- Referral Dashboard -->
                  <div class="card-bg p-4 rounded-lg mt-6">
@@ -824,22 +821,6 @@
             };
         }
         window.showAlert = showAlert;
-
-         // --- Share & Referral ---
-      function shareApp() {
-        if (!tgUser) return showToast("Could not get user data from Telegram.", "error");
-        
-        const botUsername = "gat_earn_money_bot";
-        const referralLink = `https://t.me/${botUsername}?start=${getUserRefCode()}`;
-        const text = `🎉 Join this amazing bot and start earning! Use my link to get a special bonus:`;
-        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
-        
-        if (window.Telegram && Telegram.WebApp) {
-          Telegram.WebApp.openTelegramLink(shareUrl);
-        } else {
-          showToast("Please share this link: " + referralLink, "info");
-        }
-      }
 
     </script>
 </body>
