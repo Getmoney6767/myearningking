@@ -23,11 +23,35 @@
         .btn-success { background-color: #10b981; color: white; }
         .btn-danger { background-color: #ef4444; color: white; }
         .btn-warning { background-color: #f59e0b; color: white; }
+        .btn-info { background-color: #3b82f6; color: white; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
         th { background-color: #f9fafb; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .tab-button { padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; margin-right: 0.5rem; background-color: #e5e7eb; }
+        .tab-button.active { background-color: #4f46e5; color: white; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        .cursor-pointer { cursor: pointer; }
+        .notification-tab { padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; margin-right: 0.5rem; background-color: #e5e7eb; }
+        .notification-tab.active { background-color: #4f46e5; color: white; }
+        .login-error { color: #ef4444; margin-top: 0.5rem; text-align: center; display: none; }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4f46e5;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -35,9 +59,25 @@
     <div id="admin-login-view" class="min-h-screen flex items-center justify-center bg-gray-100">
         <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
             <h1 class="text-3xl font-bold text-center text-gray-900">Admin Panel Login</h1>
-            <input id="admin-email" type="email" placeholder="Admin Email" class="w-full px-4 py-2 border rounded-lg">
-            <input id="admin-password" type="password" placeholder="Password" class="w-full px-4 py-2 border rounded-lg">
-            <button id="admin-login-btn" class="w-full btn btn-primary">Login</button>
+            <div>
+                <input id="admin-email" type="email" placeholder="Admin Email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <input id="admin-password" type="password" placeholder="Password" class="w-full px-4 py-2 border rounded-lg mt-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            <div id="login-error" class="login-error">
+                <i data-lucide="alert-circle" class="inline w-5 h-5 mr-1"></i>
+                <span id="error-message"></span>
+            </div>
+            <button id="admin-login-btn" class="w-full btn btn-primary flex items-center justify-center">
+                <span id="login-text">Login</span>
+                <div id="login-spinner" class="loading-spinner" style="display: none;"></div>
+            </button>
+            
+            <!-- Demo Credentials -->
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h3 class="font-semibold text-blue-800 mb-2">Demo Credentials:</h3>
+                <p class="text-sm text-blue-700"><span class="font-medium">Email:</span> admin@cashreward.com</p>
+                <p class="text-sm text-blue-700"><span class="font-medium">Password:</span> admin123</p>
+            </div>
         </div>
     </div>
 
@@ -62,27 +102,139 @@
                 <!-- Dashboard Page -->
                 <div id="dashboard-page" class="page">
                     <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Total Users</h2><p id="total-users" class="text-4xl font-bold mt-2">0</p></div>
+                        <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Active Users</h2><p id="active-users" class="text-4xl font-bold mt-2">0</p></div>
+                        <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Blocked Users</h2><p id="blocked-users" class="text-4xl font-bold mt-2">0</p></div>
                         <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Pending Withdrawals</h2><p id="pending-withdrawals" class="text-4xl font-bold mt-2">0</p></div>
                         <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Total Referrals</h2><p id="total-referrals" class="text-4xl font-bold mt-2">0</p></div>
+                        <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Total Withdrawn</h2><p id="total-withdrawn" class="text-4xl font-bold mt-2">₹0</p></div>
+                        <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Today's Income</h2><p id="today-income" class="text-4xl font-bold mt-2">₹0</p></div>
+                        <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Total Ads Watched</h2><p id="total-ads" class="text-4xl font-bold mt-2">0</p></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="stat-card p-6">
+                            <h2 class="text-xl font-bold mb-4">Daily User Activity</h2>
+                            <div class="chart-container">
+                                <canvas id="userActivityChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="stat-card p-6">
+                            <h2 class="text-xl font-bold mb-4">Withdrawal Statistics</h2>
+                            <div class="chart-container">
+                                <canvas id="withdrawalChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Users Page -->
                 <div id="users-page" class="page">
                     <h1 class="text-3xl font-bold mb-6">User Management</h1>
-                    <div class="bg-white shadow rounded-lg overflow-x-auto">
+                    
+                    <div class="flex mb-4 space-x-2">
+                        <input type="text" id="user-search" placeholder="Search users..." class="px-4 py-2 border rounded-lg flex-grow">
+                        <button id="search-user-btn" class="btn btn-primary">Search</button>
+                    </div>
+                    
+                    <div class="bg-white shadow rounded-lg overflow-x-auto mb-6">
                         <table class="min-w-full">
-                            <thead><tr><th>Name</th><th>Email</th><th>Balance</th><th>Referrals</th><th>Status</th><th>Actions</th></tr></thead>
+                            <thead><tr><th>Name</th><th>Email</th><th>Balance</th><th>Referrals</th><th>Ads Watched</th><th>Total Withdrawn</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody id="users-table-body"></tbody>
                         </table>
+                    </div>
+                    
+                    <div id="user-detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-screen overflow-y-auto">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-2xl font-bold" id="user-detail-name">User Details</h2>
+                                <button onclick="closeUserDetail()" class="text-gray-500 hover:text-gray-700">
+                                    <i data-lucide="x" class="w-6 h-6"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <h3 class="text-lg font-semibold mb-2">Basic Information</h3>
+                                    <p><strong>Email:</strong> <span id="detail-email"></span></p>
+                                    <p><strong>Joined:</strong> <span id="detail-joined"></span></p>
+                                    <p><strong>Status:</strong> <span id="detail-status"></span></p>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold mb-2">Financial Information</h3>
+                                    <div class="flex items-center mb-2">
+                                        <p class="mr-2"><strong>Balance:</strong> <span id="detail-balance"></span></p>
+                                        <button onclick="editUserBalance()" class="btn btn-info text-xs">Edit</button>
+                                    </div>
+                                    <p><strong>Total Withdrawn:</strong> <span id="detail-total-withdrawn"></span></p>
+                                    <p><strong>Total Earned:</strong> <span id="detail-total-earned"></span></p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold mb-2">Activity Statistics</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div class="stat-card p-4 text-center">
+                                        <p class="text-gray-500">Ads Watched</p>
+                                        <p class="text-2xl font-bold" id="detail-ads-watched">0</p>
+                                    </div>
+                                    <div class="stat-card p-4 text-center">
+                                        <p class="text-gray-500">Referrals</p>
+                                        <p class="text-2xl font-bold" id="detail-referrals">0</p>
+                                    </div>
+                                    <div class="stat-card p-4 text-center">
+                                        <p class="text-gray-500">Referral Earnings</p>
+                                        <p class="text-2xl font-bold" id="detail-ref-earnings">0</p>
+                                    </div>
+                                    <div class="stat-card p-4 text-center">
+                                        <p class="text-gray-500">Ad Earnings</p>
+                                        <p class="text-2xl font-bold" id="detail-ad-earnings">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <div class="flex border-b">
+                                    <div class="tab-button active" data-tab="referrals-tab">Referrals</div>
+                                    <div class="tab-button" data-tab="withdrawals-tab">Withdrawal History</div>
+                                    <div class="tab-button" data-tab="ads-tab">Ad History</div>
+                                </div>
+                                
+                                <div id="referrals-tab" class="tab-content pt-4">
+                                    <table class="min-w-full">
+                                        <thead><tr><th>Referred User</th><th>Date</th><th>Earnings</th></tr></thead>
+                                        <tbody id="user-referrals-list"></tbody>
+                                    </table>
+                                </div>
+                                
+                                <div id="withdrawals-tab" class="tab-content hidden pt-4">
+                                    <table class="min-w-full">
+                                        <thead><tr><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+                                        <tbody id="user-withdrawals-list"></tbody>
+                                    </table>
+                                </div>
+                                
+                                <div id="ads-tab" class="tab-content hidden pt-4">
+                                    <table class="min-w-full">
+                                        <thead><tr><th>Ad</th><th>Earnings</th><th>Date</th></tr></thead>
+                                        <tbody id="user-ads-list"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Withdrawals Page -->
                 <div id="withdrawals-page" class="page">
                     <h1 class="text-3xl font-bold mb-6">Withdrawal Requests</h1>
+                    <div class="flex mb-4 space-x-2">
+                        <button class="withdrawal-tab tab-button active" data-status="pending">Pending</button>
+                        <button class="withdrawal-tab tab-button" data-status="approved">Approved</button>
+                        <button class="withdrawal-tab tab-button" data-status="rejected">Rejected</button>
+                    </div>
                      <div class="bg-white shadow rounded-lg overflow-x-auto">
                         <table>
                             <thead><tr><th>User Name</th><th>Amount</th><th>Method</th><th>Details</th><th>Requested At</th><th>Referrals</th><th>Actions</th></tr></thead>
@@ -93,11 +245,28 @@
 
                 <!-- Notifications Page -->
                 <div id="notifications-page" class="page">
-                    <h1 class="text-3xl font-bold mb-6">Send Notification</h1>
-                    <div class="stat-card p-6 max-w-lg">
-                        <div class="mb-4"><label for="notification-title" class="block font-semibold mb-2">Title</label><input type="text" id="notification-title" class="w-full px-4 py-2 border rounded-lg"></div>
-                        <div class="mb-6"><label for="notification-message" class="block font-semibold mb-2">Message</label><textarea id="notification-message" rows="4" class="w-full px-4 py-2 border rounded-lg"></textarea></div>
-                        <button id="send-notification-btn" class="btn btn-primary">Send to All Users</button>
+                    <h1 class="text-3xl font-bold mb-6">Notifications</h1>
+                    
+                    <div class="flex mb-4 space-x-2">
+                        <button class="notification-tab active" data-tab="send-notification">Send Notification</button>
+                        <button class="notification-tab" data-tab="notification-history">Notification History</button>
+                    </div>
+                    
+                    <div id="send-notification" class="notification-content">
+                        <div class="stat-card p-6 max-w-lg">
+                            <div class="mb-4"><label for="notification-title" class="block font-semibold mb-2">Title</label><input type="text" id="notification-title" class="w-full px-4 py-2 border rounded-lg"></div>
+                            <div class="mb-6"><label for="notification-message" class="block font-semibold mb-2">Message</label><textarea id="notification-message" rows="4" class="w-full px-4 py-2 border rounded-lg"></textarea></div>
+                            <button id="send-notification-btn" class="btn btn-primary">Send to All Users</button>
+                        </div>
+                    </div>
+                    
+                    <div id="notification-history" class="notification-content hidden">
+                        <div class="bg-white shadow rounded-lg overflow-x-auto">
+                            <table>
+                                <thead><tr><th>Title</th><th>Message</th><th>Sent At</th><th>Actions</th></tr></thead>
+                                <tbody id="notification-history-body"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -143,7 +312,23 @@
         </div>
     </div>
 
+    <!-- Edit Balance Modal -->
+    <div id="edit-balance-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4">Edit User Balance</h2>
+            <div class="mb-4">
+                <label class="block font-semibold mb-2">New Balance</label>
+                <input type="number" id="new-balance-input" class="w-full px-4 py-2 border rounded-lg">
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button id="cancel-edit-balance" class="btn bg-gray-200 text-gray-800">Cancel</button>
+                <button id="save-balance-btn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAdVi5WMZ9HMFE7PMAnlmn1_tw6pJVsm8k",
             authDomain: "myearningking-fa104.firebaseapp.com",
@@ -153,87 +338,346 @@
             appId: "1:577696408984:web:83e1e87537287cf7cbf7ed"
         };
         
+        // Admin UIDs for authorization
         const ADMIN_UIDS = ["7274L7mus2fCdTkzFoYd3ZMl6Hu2"]; 
+        
+        // Global variables
+        let currentSelectedUserId = null;
+        let userActivityChart = null;
+        let withdrawalChart = null;
 
+        // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, query, where, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, query, where, onSnapshot, addDoc, serverTimestamp, getDocs, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // DOM elements
         const loginView = document.getElementById('admin-login-view');
         const dashboardView = document.getElementById('admin-dashboard');
+        const loginError = document.getElementById('login-error');
+        const errorMessage = document.getElementById('error-message');
+        const loginBtn = document.getElementById('admin-login-btn');
+        const loginText = document.getElementById('login-text');
+        const loginSpinner = document.getElementById('login-spinner');
 
+        // Initialize the application
         window.onload = () => {
             lucide.createIcons();
             setupEventListeners();
+            
+            // Check if user is already logged in
             onAuthStateChanged(auth, (user) => {
                 if (user && ADMIN_UIDS.includes(user.uid)) {
+                    // User is signed in and is admin
                     loginView.style.display = 'none';
-                    dashboardView.style.display = 'block';
+                    dashboardView.classList.remove('hidden');
                     navigateTo('dashboard-page');
                     loadDashboardData();
                     loadUsers();
                     loadWithdrawals();
                     loadSettings();
+                    loadNotificationHistory();
                 } else {
+                    // User is not signed in or not admin
                     loginView.style.display = 'flex';
-                    dashboardView.style.display = 'none';
+                    dashboardView.classList.add('hidden');
                 }
             });
         };
 
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Login button event
+            loginBtn.addEventListener('click', handleAdminLogin);
+            
+            // Also allow login with Enter key
+            document.getElementById('admin-password').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') handleAdminLogin();
+            });
+            
+            // Logout button event
+            document.getElementById('admin-logout-btn').addEventListener('click', () => signOut(auth));
+            
+            // Settings button event
+            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+            
+            // Notification button event
+            document.getElementById('send-notification-btn').addEventListener('click', sendNotification);
+            
+            // Navigation links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => { 
+                    e.preventDefault(); 
+                    navigateTo(link.dataset.page); 
+                });
+            });
+            
+            // Search functionality
+            document.getElementById('search-user-btn').addEventListener('click', searchUsers);
+            document.getElementById('user-search').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') searchUsers();
+            });
+            
+            // User detail tabs
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const tabName = e.target.dataset.tab;
+                    if (!tabName) return;
+                    
+                    // Handle user detail tabs
+                    document.querySelectorAll('.tab-button').forEach(btn => {
+                        if (btn.dataset.tab) btn.classList.remove('active');
+                    });
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                    
+                    e.target.classList.add('active');
+                    document.getElementById(tabName).classList.remove('hidden');
+                });
+            });
+            
+            // Withdrawal tabs
+            document.querySelectorAll('.withdrawal-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const status = e.target.dataset.status;
+                    document.querySelectorAll('.withdrawal-tab').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    loadWithdrawals(status);
+                });
+            });
+            
+            // Notification tabs
+            document.querySelectorAll('.notification-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const tabName = e.target.dataset.tab;
+                    document.querySelectorAll('.notification-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.notification-content').forEach(c => c.classList.add('hidden'));
+                    
+                    e.target.classList.add('active');
+                    document.getElementById(tabName).classList.remove('hidden');
+                    
+                    if (tabName === 'notification-history') {
+                        loadNotificationHistory();
+                    }
+                });
+            });
+            
+            // Edit balance modal events
+            document.getElementById('cancel-edit-balance').addEventListener('click', () => {
+                document.getElementById('edit-balance-modal').classList.add('hidden');
+            });
+            
+            document.getElementById('save-balance-btn').addEventListener('click', saveUserBalance);
+            
+            // Alert and confirm modals
+            document.getElementById('alert-ok-btn').addEventListener('click', () => {
+                document.getElementById('custom-alert').classList.add('hidden');
+            });
+            
+            document.getElementById('confirm-cancel-btn').addEventListener('click', () => {
+                document.getElementById('custom-confirm').classList.add('hidden');
+            });
+        }
+
+        // Handle admin login
+        async function handleAdminLogin() {
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            
+            // Basic validation
+            if (!email || !password) {
+                showLoginError("Please enter both email and password");
+                return;
+            }
+            
+            // Show loading state
+            loginText.textContent = "Logging in...";
+            loginSpinner.style.display = 'inline-block';
+            loginBtn.disabled = true;
+            
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                
+                // Check if user is authorized admin
+                if (!ADMIN_UIDS.includes(userCredential.user.uid)) {
+                    await signOut(auth);
+                    showLoginError("You are not authorized to access this panel");
+                    return;
+                }
+                
+                // Login successful
+                hideLoginError();
+                loginView.style.display = 'none';
+                dashboardView.classList.remove('hidden');
+                
+            } catch (error) {
+                // Handle different error types
+                let errorMsg = "Login failed. Please try again.";
+                
+                if (error.code === 'auth/invalid-email') {
+                    errorMsg = "Invalid email address format.";
+                } else if (error.code === 'auth/user-disabled') {
+                    errorMsg = "This account has been disabled.";
+                } else if (error.code === 'auth/user-not-found') {
+                    errorMsg = "No account found with this email.";
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMsg = "Incorrect password.";
+                }
+                
+                showLoginError(errorMsg);
+            } finally {
+                // Reset login button state
+                loginText.textContent = "Login";
+                loginSpinner.style.display = 'none';
+                loginBtn.disabled = false;
+            }
+        }
+
+        // Show login error
+        function showLoginError(message) {
+            errorMessage.textContent = message;
+            loginError.style.display = 'block';
+        }
+
+        // Hide login error
+        function hideLoginError() {
+            loginError.style.display = 'none';
+        }
+
+        // Navigate to different pages
         function navigateTo(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
+            
+            // Update active nav link
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
                 if (link.dataset.page === pageId) link.classList.add('active');
             });
         }
 
-        function setupEventListeners() {
-            document.getElementById('admin-login-btn').addEventListener('click', handleAdminLogin);
-            document.getElementById('admin-logout-btn').addEventListener('click', () => signOut(auth));
-            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
-            document.getElementById('send-notification-btn').addEventListener('click', sendNotification);
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', (e) => { e.preventDefault(); navigateTo(link.dataset.page); });
-            });
-        }
-
-        async function handleAdminLogin() {
-            const email = document.getElementById('admin-email').value;
-            const password = document.getElementById('admin-password').value;
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                if (!ADMIN_UIDS.includes(userCredential.user.uid)) {
-                    await signOut(auth);
-                    showAlert("Aap is panel ko access karne ke liye authorized nahi hain.");
-                }
-            } catch (error) { showAlert(error.message); }
-        }
-
+        // Load dashboard data
         function loadDashboardData() {
+            // Total users count
             onSnapshot(collection(db, "users"), snap => { 
                 document.getElementById('total-users').textContent = snap.size; 
                 
-                // Calculate total referrals
+                // Calculate active and blocked users
+                let activeCount = 0;
+                let blockedCount = 0;
                 let totalRefs = 0;
+                let totalAds = 0;
+                
                 snap.forEach(doc => {
                     const userData = doc.data();
+                    if (userData.isBlocked) {
+                        blockedCount++;
+                    } else {
+                        activeCount++;
+                    }
                     totalRefs += userData.totalReferrals || 0;
+                    totalAds += userData.adsWatched || 0;
                 });
+                
+                document.getElementById('active-users').textContent = activeCount;
+                document.getElementById('blocked-users').textContent = blockedCount;
                 document.getElementById('total-referrals').textContent = totalRefs;
+                document.getElementById('total-ads').textContent = totalAds;
             });
             
+            // Pending withdrawals count
             onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "pending")), snap => { 
                 document.getElementById('pending-withdrawals').textContent = snap.size; 
             });
+            
+            // Total withdrawn amount
+            onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "approved")), snap => { 
+                let totalWithdrawn = 0;
+                snap.forEach(doc => {
+                    totalWithdrawn += doc.data().amount || 0;
+                });
+                document.getElementById('total-withdrawn').textContent = `₹${totalWithdrawn}`;
+            });
+            
+            // Today's income (from ads watched today)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            onSnapshot(collection(db, "ads"), snap => {
+                let todayIncome = 0;
+                snap.forEach(doc => {
+                    const adData = doc.data();
+                    const adDate = adData.timestamp?.toDate();
+                    if (adDate && adDate >= today) {
+                        todayIncome += adData.earned || 0;
+                    }
+                });
+                document.getElementById('today-income').textContent = `₹${todayIncome}`;
+            });
+            
+            // Load charts
+            loadCharts();
+        }
+        
+        // Load charts for dashboard
+        function loadCharts() {
+            // User activity chart (last 7 days)
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                last7Days.push(date.toLocaleDateString('en-IN', {day: 'numeric', month: 'short'}));
+            }
+            
+            // For demo purposes, using random data
+            const userActivityData = last7Days.map(() => Math.floor(Math.random() * 100));
+            const withdrawalData = last7Days.map(() => Math.floor(Math.random() * 5000));
+            
+            const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+            if (userActivityChart) userActivityChart.destroy();
+            userActivityChart = new Chart(userActivityCtx, {
+                type: 'line',
+                data: {
+                    labels: last7Days,
+                    datasets: [{
+                        label: 'Active Users',
+                        data: userActivityData,
+                        borderColor: '#4f46e5',
+                        tension: 0.1,
+                        fill: true,
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            const withdrawalCtx = document.getElementById('withdrawalChart').getContext('2d');
+            if (withdrawalChart) withdrawalChart.destroy();
+            withdrawalChart = new Chart(withdrawalCtx, {
+                type: 'bar',
+                data: {
+                    labels: last7Days,
+                    datasets: [{
+                        label: 'Withdrawals (₹)',
+                        data: withdrawalData,
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
         }
 
+        // Load users for management
         function loadUsers() {
             const usersTableBody = document.getElementById('users-table-body');
             onSnapshot(collection(db, "users"), (snapshot) => {
@@ -242,20 +686,257 @@
                     const user = doc.data();
                     const isBlocked = user.isBlocked || false;
                     const referrals = user.totalReferrals || 0;
-                    const row = `<tr>
+                    const adsWatched = user.adsWatched || 0;
+                    const totalWithdrawn = user.totalWithdrawn || 0;
+                    
+                    const row = `<tr class="cursor-pointer hover:bg-gray-50" onclick="viewUserDetail('${doc.id}')">
                         <td>${user.name || 'N/A'}</td><td>${user.email}</td><td>${user.balance || 0}</td><td>${referrals}</td>
+                        <td>${adsWatched}</td><td>₹${totalWithdrawn}</td>
                         <td><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">${isBlocked ? 'Blocked' : 'Active'}</span></td>
-                        <td><button class="btn text-xs ${isBlocked ? 'btn-success' : 'btn-danger'}" onclick="window.toggleBlockUser('${doc.id}', ${isBlocked})">${isBlocked ? 'Unblock' : 'Block'}</button></td>
+                        <td><button class="btn text-xs ${isBlocked ? 'btn-success' : 'btn-danger'}" onclick="event.stopPropagation(); toggleBlockUser('${doc.id}', ${isBlocked})">${isBlocked ? 'Unblock' : 'Block'}</button></td>
                     </tr>`;
                     usersTableBody.innerHTML += row;
                 });
             });
         }
+        
+        // Search users
+        function searchUsers() {
+            const searchTerm = document.getElementById('user-search').value.toLowerCase();
+            const usersTableBody = document.getElementById('users-table-body');
+            
+            if (!searchTerm) {
+                loadUsers();
+                return;
+            }
+            
+            // Clear the table
+            usersTableBody.innerHTML = '';
+            
+            // Query users based on search term
+            const usersRef = collection(db, "users");
+            onSnapshot(usersRef, (snapshot) => {
+                usersTableBody.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    const userName = user.name || '';
+                    const userEmail = user.email || '';
+                    
+                    if (userName.toLowerCase().includes(searchTerm) || userEmail.toLowerCase().includes(searchTerm)) {
+                        const isBlocked = user.isBlocked || false;
+                        const referrals = user.totalReferrals || 0;
+                        const adsWatched = user.adsWatched || 0;
+                        const totalWithdrawn = user.totalWithdrawn || 0;
+                        
+                        const row = `<tr class="cursor-pointer hover:bg-gray-50" onclick="viewUserDetail('${doc.id}')">
+                            <td>${userName}</td><td>${userEmail}</td><td>${user.balance || 0}</td><td>${referrals}</td>
+                            <td>${adsWatched}</td><td>₹${totalWithdrawn}</td>
+                            <td><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">${isBlocked ? 'Blocked' : 'Active'}</span></td>
+                            <td><button class="btn text-xs ${isBlocked ? 'btn-success' : 'btn-danger'}" onclick="event.stopPropagation(); toggleBlockUser('${doc.id}', ${isBlocked})">${isBlocked ? 'Unblock' : 'Block'}</button></td>
+                        </tr>`;
+                        usersTableBody.innerHTML += row;
+                    }
+                });
+                
+                if (usersTableBody.innerHTML === '') {
+                    usersTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No users found</td></tr>';
+                }
+            });
+        }
+        
+        // View user details
+        async function viewUserDetail(userId) {
+            currentSelectedUserId = userId;
+            const userRef = doc(db, "users", userId);
+            const userSnap = await getDoc(userRef);
+            
+            if (!userSnap.exists()) {
+                showAlert("User not found");
+                return;
+            }
+            
+            const userData = userSnap.data();
+            
+            // Populate basic info
+            document.getElementById('user-detail-name').textContent = userData.name || 'User Details';
+            document.getElementById('detail-email').textContent = userData.email;
+            document.getElementById('detail-joined').textContent = userData.createdAt?.toDate().toLocaleDateString() || 'N/A';
+            document.getElementById('detail-status').textContent = userData.isBlocked ? 'Blocked' : 'Active';
+            document.getElementById('detail-status').className = userData.isBlocked ? 'text-red-600' : 'text-green-600';
+            
+            // Populate financial info
+            document.getElementById('detail-balance').textContent = userData.balance || 0;
+            document.getElementById('detail-total-withdrawn').textContent = `₹${userData.totalWithdrawn || 0}`;
+            document.getElementById('detail-total-earned').textContent = `₹${(userData.balance || 0) + (userData.totalWithdrawn || 0)}`;
+            
+            // Populate activity stats
+            document.getElementById('detail-ads-watched').textContent = userData.adsWatched || 0;
+            document.getElementById('detail-referrals').textContent = userData.totalReferrals || 0;
+            document.getElementById('detail-ref-earnings').textContent = `₹${userData.referralEarnings || 0}`;
+            document.getElementById('detail-ad-earnings').textContent = `₹${userData.adEarnings || 0}`;
+            
+            // Load referrals
+            await loadUserReferrals(userId);
+            
+            // Load withdrawal history
+            await loadUserWithdrawals(userId);
+            
+            // Load ad history
+            await loadUserAdHistory(userId);
+            
+            // Show the modal
+            document.getElementById('user-detail-modal').classList.remove('hidden');
+        }
+        
+        // Load user referrals
+        async function loadUserReferrals(userId) {
+            const referralsList = document.getElementById('user-referrals-list');
+            referralsList.innerHTML = '<tr><td colspan="3" class="text-center py-2">Loading...</td></tr>';
+            
+            try {
+                const q = query(collection(db, "referrals"), where("referrerId", "==", userId));
+                const querySnapshot = await getDocs(q);
+                
+                referralsList.innerHTML = '';
+                if (querySnapshot.empty) {
+                    referralsList.innerHTML = '<tr><td colspan="3" class="text-center py-2">No referrals found</td></tr>';
+                    return;
+                }
+                
+                querySnapshot.forEach(async (docSnap) => {
+                    const referral = docSnap.data();
+                    const referredUserRef = doc(db, "users", referral.referredUserId);
+                    const referredUserSnap = await getDoc(referredUserRef);
+                    const referredUserName = referredUserSnap.exists() ? referredUserSnap.data().name : 'Unknown User';
+                    
+                    const row = `<tr>
+                        <td>${referredUserName}</td>
+                        <td>${referral.timestamp?.toDate().toLocaleDateString() || 'N/A'}</td>
+                        <td>₹${referral.earned || 0}</td>
+                    </tr>`;
+                    referralsList.innerHTML += row;
+                });
+            } catch (error) {
+                console.error("Error loading referrals:", error);
+                referralsList.innerHTML = '<tr><td colspan="3" class="text-center py-2">Error loading referrals</td></tr>';
+            }
+        }
+        
+        // Load user withdrawals
+        async function loadUserWithdrawals(userId) {
+            const withdrawalsList = document.getElementById('user-withdrawals-list');
+            withdrawalsList.innerHTML = '<tr><td colspan="4" class="text-center py-2">Loading...</td></tr>';
+            
+            try {
+                const q = query(collection(db, "withdrawals"), where("userId", "==", userId), orderBy("requestedAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                withdrawalsList.innerHTML = '';
+                if (querySnapshot.empty) {
+                    withdrawalsList.innerHTML = '<tr><td colspan="4" class="text-center py-2">No withdrawal history</td></tr>';
+                    return;
+                }
+                
+                querySnapshot.forEach((docSnap) => {
+                    const withdrawal = docSnap.data();
+                    const statusClass = withdrawal.status === 'approved' ? 'text-green-600' : 
+                                      withdrawal.status === 'rejected' ? 'text-red-600' : 'text-yellow-600';
+                    
+                    const row = `<tr>
+                        <td>₹${withdrawal.amount}</td>
+                        <td>${withdrawal.method}</td>
+                        <td class="${statusClass}">${withdrawal.status}</td>
+                        <td>${withdrawal.requestedAt?.toDate().toLocaleDateString() || 'N/A'}</td>
+                    </tr>`;
+                    withdrawalsList.innerHTML += row;
+                });
+            } catch (error) {
+                console.error("Error loading withdrawals:", error);
+                withdrawalsList.innerHTML = '<tr><td colspan="4" class="text-center py-2">Error loading withdrawal history</td></tr>';
+            }
+        }
+        
+        // Load user ad history
+        async function loadUserAdHistory(userId) {
+            const adsList = document.getElementById('user-ads-list');
+            adsList.innerHTML = '<tr><td colspan="3" class="text-center py-2">Loading...</td></tr>';
+            
+            try {
+                const q = query(collection(db, "ads"), where("userId", "==", userId), orderBy("timestamp", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                adsList.innerHTML = '';
+                if (querySnapshot.empty) {
+                    adsList.innerHTML = '<tr><td colspan="3" class="text-center py-2">No ad history</td></tr>';
+                    return;
+                }
+                
+                querySnapshot.forEach((docSnap) => {
+                    const ad = docSnap.data();
+                    const row = `<tr>
+                        <td>${ad.adName || 'Ad'}</td>
+                        <td>₹${ad.earned || 0}</td>
+                        <td>${ad.timestamp?.toDate().toLocaleDateString() || 'N/A'}</td>
+                    </tr>`;
+                    adsList.innerHTML += row;
+                });
+            } catch (error) {
+                console.error("Error loading ad history:", error);
+                adsList.innerHTML = '<tr><td colspan="3" class="text-center py-2">Error loading ad history</td></tr>';
+            }
+        }
+        
+        // Close user detail modal
+        function closeUserDetail() {
+            document.getElementById('user-detail-modal').classList.add('hidden');
+        }
+        
+        // Edit user balance
+        function editUserBalance() {
+            const currentBalance = document.getElementById('detail-balance').textContent;
+            document.getElementById('new-balance-input').value = currentBalance;
+            document.getElementById('edit-balance-modal').classList.remove('hidden');
+        }
+        
+        // Save user balance
+        async function saveUserBalance() {
+            const newBalance = parseFloat(document.getElementById('new-balance-input').value);
+            
+            if (isNaN(newBalance) || newBalance < 0) {
+                showAlert("Please enter a valid balance amount");
+                return;
+            }
+            
+            try {
+                const userRef = doc(db, "users", currentSelectedUserId);
+                await updateDoc(userRef, { balance: newBalance });
+                
+                document.getElementById('edit-balance-modal').classList.add('hidden');
+                document.getElementById('detail-balance').textContent = newBalance;
+                
+                showAlert("User balance updated successfully");
+            } catch (error) {
+                showAlert(`Error updating balance: ${error.message}`);
+            }
+        }
 
-        function loadWithdrawals() {
+        // Load withdrawals
+        function loadWithdrawals(status = 'pending') {
             const withdrawalsTableBody = document.getElementById('withdrawals-table-body');
-            onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "pending")), (snapshot) => {
+            
+            // Clear existing content
+            withdrawalsTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4">Loading...</td></tr>';
+            
+            const q = query(collection(db, "withdrawals"), where("status", "==", status));
+                
+            onSnapshot(q, (snapshot) => {
                 withdrawalsTableBody.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    withdrawalsTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4">No ${status} withdrawals</td></tr>`;
+                    return;
+                }
+                
                 snapshot.forEach(async (docSnap) => {
                     const request = docSnap.data();
                     const requestedDate = request.requestedAt?.toDate().toLocaleString() || 'N/A';
@@ -272,20 +953,71 @@
                         console.error("Error getting user data:", error);
                     }
                     
+                    const actionButtons = status === 'pending' ? 
+                        `<td class="space-x-2">
+                            <button class="btn btn-success text-xs" onclick="handleWithdrawal('${docSnap.id}', 'approved')">Approve</button>
+                            <button class="btn btn-danger text-xs" onclick="handleWithdrawal('${docSnap.id}', 'rejected')">Reject</button>
+                        </td>` : 
+                        `<td>${request.status}</td>`;
+                    
                     const row = `<tr>
                         <td>${request.userName || 'N/A'}</td><td>${request.amount}</td><td>${request.method}</td>
                         <td>${request.paymentDetail || 'N/A'}</td><td>${requestedDate}</td>
                         <td>${referralCount}</td>
-                        <td class="space-x-2">
-                            <button class="btn btn-success text-xs" onclick="window.handleWithdrawal('${docSnap.id}', 'approved')">Approve</button>
-                            <button class="btn btn-danger text-xs" onclick="window.handleWithdrawal('${docSnap.id}', 'rejected')">Reject</button>
-                        </td>
+                        ${actionButtons}
                     </tr>`;
                     withdrawalsTableBody.innerHTML += row;
                 });
             });
         }
 
+        // Load notification history
+        async function loadNotificationHistory() {
+            const notificationHistoryBody = document.getElementById('notification-history-body');
+            notificationHistoryBody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Loading...</td></tr>';
+            
+            try {
+                const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                notificationHistoryBody.innerHTML = '';
+                if (querySnapshot.empty) {
+                    notificationHistoryBody.innerHTML = '<tr><td colspan="4" class="text-center py-4">No notifications found</td></tr>';
+                    return;
+                }
+                
+                querySnapshot.forEach((docSnap) => {
+                    const notification = docSnap.data();
+                    const sentDate = notification.createdAt?.toDate().toLocaleString() || 'N/A';
+                    
+                    const row = `<tr>
+                        <td>${notification.title || 'N/A'}</td>
+                        <td>${notification.message || 'N/A'}</td>
+                        <td>${sentDate}</td>
+                        <td><button class="btn btn-danger text-xs" onclick="deleteNotification('${docSnap.id}')">Delete</button></td>
+                    </tr>`;
+                    notificationHistoryBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error("Error loading notifications:", error);
+                notificationHistoryBody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Error loading notifications</td></tr>';
+            }
+        }
+        
+        // Delete notification
+        async function deleteNotification(notificationId) {
+            showConfirm("Kya aap is notification ko delete karna chahte hain?", async () => {
+                try {
+                    await deleteDoc(doc(db, "notifications", notificationId));
+                    showAlert("Notification safaltapoorvak delete ho gaya hai.");
+                    loadNotificationHistory();
+                } catch (error) {
+                    showAlert(`Error deleting notification: ${error.message}`);
+                }
+            });
+        }
+
+        // Load settings
         async function loadSettings() {
             const configRef = doc(db, "config", "main");
             const docSnap = await getDoc(configRef);
@@ -300,6 +1032,7 @@
             }
         }
 
+        // Toggle user block status
         window.toggleBlockUser = (userId, isBlocked) => {
             const action = isBlocked ? 'unblock' : 'block';
             showConfirm(`Kya aap is user ko ${action} karna chahte hain?`, async () => {
@@ -311,6 +1044,7 @@
             });
         };
 
+        // Handle withdrawal approval/rejection
         window.handleWithdrawal = (requestId, newStatus) => {
             showConfirm(`Kya aap is request ko ${newStatus} karna chahte hain?`, async () => {
                 const requestRef = doc(db, "withdrawals", requestId);
@@ -333,6 +1067,7 @@
             });
         };
 
+        // Send notification to all users
         async function sendNotification() {
             const title = document.getElementById('notification-title').value;
             const message = document.getElementById('notification-message').value;
@@ -345,6 +1080,7 @@
             } catch (error) { showAlert(`Error: ${error.message}`); }
         }
 
+        // Save settings
         async function saveSettings() {
             const minWithdrawal = parseInt(document.getElementById('min-withdrawal').value);
             const dailyAdLimit = parseInt(document.getElementById('daily-ad-limit').value);
@@ -374,12 +1110,13 @@
             }
         }
         
+        // Show alert message
         function showAlert(message) {
             document.getElementById('alert-message').textContent = message;
             document.getElementById('custom-alert').classList.remove('hidden');
-            document.getElementById('alert-ok-btn').onclick = () => { document.getElementById('custom-alert').classList.add('hidden'); };
         }
 
+        // Show confirmation dialog
         function showConfirm(message, onConfirm) {
             const confirmModal = document.getElementById('custom-confirm');
             const confirmMessage = document.getElementById('confirm-message');
