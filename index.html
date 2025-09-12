@@ -88,6 +88,19 @@
                     </div>
                     <button id="home-withdraw-btn" class="bg-white text-black font-semibold px-6 py-2 rounded-lg">Withdraw</button>
                 </div>
+                
+                <!-- Today's Earnings and Referral Stats -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="card-bg p-3 rounded-lg">
+                        <p class="text-gray-400 text-sm">Today's Earnings</p>
+                        <p class="text-xl font-bold text-accent"><span id="today-earnings">0</span> Rupees</p>
+                    </div>
+                    <div class="card-bg p-3 rounded-lg">
+                        <p class="text-gray-400 text-sm">Total Referrals</p>
+                        <p class="text-xl font-bold text-accent"><span id="total-referrals">0</span> Users</p>
+                    </div>
+                </div>
+                
                 <section>
                     <div class="flex justify-between items-center">
                         <div>
@@ -117,6 +130,15 @@
                     <p class="text-sm text-gray-400 mb-1">Current Balance: <span class="font-bold text-accent"><span id="wallet-coin-balance">0</span> Rupees</span></p>
                     <p class="text-sm text-gray-400 mb-2">Minimum Withdrawal: <span id="min-withdrawal-info">...</span> Rupees</p>
                     <p class="text-sm text-gray-400 mb-4 font-semibold" id="coin-value-info">...</p>
+                    
+                    <!-- Withdrawal Requirements Info -->
+                    <div id="withdrawal-requirements" class="bg-yellow-900 text-yellow-200 p-3 rounded-lg mb-4 text-sm">
+                        <p class="font-semibold">Withdrawal Requirements:</p>
+                        <p>✓ Minimum <span id="min-withdrawal-amount">5000</span> Rupees</p>
+                        <p id="referral-requirement">✓ At least <span class="font-bold">2 referrals</span> required</p>
+                        <p id="referral-status" class="mt-2">Your referrals: <span id="user-referral-count">0</span>/2</p>
+                    </div>
+                    
                     <input id="withdraw-amount" type="number" placeholder="Coin amount daalein" class="w-full p-3 rounded-lg input-field mb-3">
                     <select id="withdraw-method" class="w-full p-3 rounded-lg input-field mb-3"></select>
                     <div id="payment-details-container"></div>
@@ -140,6 +162,23 @@
                      <p class="text-sm text-gray-300">Apne dosto ke saath code share karein.</p>
                  </div>
                  <button id="share-btn" class="w-full p-3 rounded-lg btn-accent">Apna Code Share Karein</button>
+                 
+                 <!-- Referral Dashboard -->
+                 <div class="card-bg p-4 rounded-lg mt-6">
+                    <h3 class="font-semibold mb-3 text-center">Your Referral Dashboard</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-gray-800 p-3 rounded-lg text-center">
+                            <p class="text-gray-400 text-sm">Total Referrals</p>
+                            <p class="text-xl font-bold text-accent"><span id="referral-dashboard-count">0</span></p>
+                        </div>
+                        <div class="bg-gray-800 p-3 rounded-lg text-center">
+                            <p class="text-gray-400 text-sm">Earnings from Referrals</p>
+                            <p class="text-xl font-bold text-accent"><span id="referral-earnings">0</span> Rupees</p>
+                        </div>
+                    </div>
+                    <div id="referral-list" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                 </div>
+                 
                  <div class="card-bg p-4 rounded-lg mt-6">
                     <h3 class="font-semibold mb-3 text-center">Kisi ka Referral Code Hai?</h3>
                     <input id="enter-referral-code" type="text" placeholder="Yahan code daalein" class="w-full p-3 rounded-lg input-field mb-3">
@@ -155,6 +194,30 @@
                     <h2 id="profile-name" class="text-xl font-bold">User Name</h2>
                     <p id="profile-email" class="text-gray-400">user@email.com</p>
                 </div>
+                
+                <!-- Earnings Summary -->
+                <div class="card-bg p-4 rounded-lg">
+                    <h3 class="font-semibold mb-3 text-center">Earnings Summary</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span>Available Balance:</span>
+                            <span class="font-bold"><span id="profile-balance">0</span> Rupees</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Today's Earnings:</span>
+                            <span class="font-bold"><span id="profile-today-earnings">0</span> Rupees</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Total Withdrawals:</span>
+                            <span class="font-bold"><span id="profile-total-withdrawals">0</span> Rupees</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Referral Earnings:</span>
+                            <span class="font-bold"><span id="profile-referral-earnings">0</span> Rupees</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <button id="logout-btn" class="w-full mt-6 p-3 rounded-lg bg-red-600 text-white font-bold">Logout</button>
             </div>
             
@@ -201,6 +264,9 @@
         let currentUser = null;
         let userData = null;
         let appConfig = {};
+        let todayEarnings = 0;
+        let totalReferrals = 0;
+        let referralEarnings = 0;
 
         const loader = document.getElementById('loader');
         const coinBalanceEl = document.getElementById('coin-balance');
@@ -214,6 +280,15 @@
         const notificationDot = document.getElementById('notification-dot');
         const adsLeftCountEl = document.getElementById('ads-left-count');
         const paymentDetailsContainer = document.getElementById('payment-details-container');
+        const todayEarningsEl = document.getElementById('today-earnings');
+        const totalReferralsEl = document.getElementById('total-referrals');
+        const referralDashboardCountEl = document.getElementById('referral-dashboard-count');
+        const referralEarningsEl = document.getElementById('referral-earnings');
+        const userReferralCountEl = document.getElementById('user-referral-count');
+        const profileBalanceEl = document.getElementById('profile-balance');
+        const profileTodayEarningsEl = document.getElementById('profile-today-earnings');
+        const profileTotalWithdrawalsEl = document.getElementById('profile-total-withdrawals');
+        const profileReferralEarningsEl = document.getElementById('profile-referral-earnings');
 
         window.onload = () => {
             lucide.createIcons();
@@ -236,6 +311,9 @@
                 }
                 await fetchAppConfig();
                 await checkNewNotifications();
+                await loadReferralData();
+                await loadTodayEarnings();
+                await loadWithdrawalHistory();
                 updateUI();
                 showMainPage('app-container');
                 navigateTo('home-page');
@@ -261,7 +339,8 @@
                         balance: 5, referralCode: ownReferralCode, referredBy: null,
                         lastNotificationCheck: new Date(),
                         createdAt: serverTimestamp(),
-                        dailyAdCount: 0, lastAdWatchDate: new Date().toISOString().split('T')[0], isBlocked: false
+                        dailyAdCount: 0, lastAdWatchDate: new Date().toISOString().split('T')[0], isBlocked: false,
+                        totalReferrals: 0, referralEarnings: 0, todayEarnings: 0
                     };
                     await setDoc(userRef, defaultUserData);
                     userData = defaultUserData;
@@ -276,10 +355,73 @@
             const configRef = doc(db, "config", "main");
             try {
                 const configSnap = await getDoc(configRef);
-                appConfig = configSnap.exists() ? configSnap.data() : { minWithdrawal: 5000, paymentMethods: ["UPI", "Paytm"], dailyAdLimit: 10, coinValueRupees: 1000, coinValueInr: 10 };
+                appConfig = configSnap.exists() ? configSnap.data() : { 
+                    minWithdrawal: 5000, 
+                    paymentMethods: ["UPI", "Paytm"], 
+                    dailyAdLimit: 10, 
+                    coinValueRupees: 1000, 
+                    coinValueInr: 10,
+                    minReferralsForWithdrawal: 2
+                };
             } catch (error) {
                 console.error("Error fetching app config:", error);
             }
+        }
+        
+        async function loadReferralData() {
+            if (!currentUser) return;
+            
+            // Get users who used this user's referral code
+            const q = query(collection(db, "users"), where("referredBy", "==", userData.referralCode));
+            try {
+                const querySnapshot = await getDocs(q);
+                totalReferrals = querySnapshot.size;
+                
+                // Update user data with referral count
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, { totalReferrals: totalReferrals });
+                
+                // Load referral list
+                const referralListEl = document.getElementById('referral-list');
+                referralListEl.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    referralListEl.innerHTML = '<p class="text-gray-400 text-center">No referrals yet</p>';
+                } else {
+                    querySnapshot.forEach(doc => {
+                        const referredUser = doc.data();
+                        referralListEl.innerHTML += `
+                            <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                                <span>${referredUser.name || referredUser.email}</span>
+                                <span class="text-accent">Joined</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                // Update UI
+                document.getElementById('referral-dashboard-count').textContent = totalReferrals;
+                document.getElementById('total-referrals').textContent = totalReferrals;
+                document.getElementById('user-referral-count').textContent = totalReferrals;
+                
+            } catch (error) {
+                console.error("Error loading referral data:", error);
+            }
+        }
+        
+        async function loadTodayEarnings() {
+            if (!currentUser) return;
+            
+            // In a real app, you would calculate today's earnings from transaction history
+            // For simplicity, we're using a stored value
+            todayEarnings = userData.todayEarnings || 0;
+            referralEarnings = userData.referralEarnings || 0;
+            
+            // Update UI
+            todayEarningsEl.textContent = todayEarnings;
+            referralEarningsEl.textContent = referralEarnings;
+            profileTodayEarningsEl.textContent = todayEarnings;
+            profileReferralEarningsEl.textContent = referralEarnings;
         }
         
         function updateUI() {
@@ -299,6 +441,13 @@
                 option.textContent = method;
                 withdrawMethodSelect.appendChild(option);
             });
+            
+            // Update profile balance
+            profileBalanceEl.textContent = balance;
+            
+            // Update withdrawal requirements
+            document.getElementById('min-withdrawal-amount').textContent = appConfig.minWithdrawal || 5000;
+            
             updateDynamicPaymentFields();
             updateAdsLeftCount();
         }
@@ -332,6 +481,13 @@
                 link.classList.remove('active', 'text-accent');
                 if (link.dataset.page === pageId) link.classList.add('active', 'text-accent');
             });
+            
+            // Load specific data when navigating to certain pages
+            if (pageId === 'wallet-page') {
+                loadWithdrawalHistory();
+            } else if (pageId === 'refer-page') {
+                loadReferralData();
+            }
         }
         window.navigateTo = navigateTo;
 
@@ -345,7 +501,6 @@
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const pageId = link.dataset.page;
-                    if (pageId === 'wallet-page') loadWithdrawalHistory();
                     navigateTo(pageId);
                 });
             });
@@ -433,7 +588,16 @@
                     return;
                 }
                 const withdrawals = [];
-                querySnapshot.forEach(doc => withdrawals.push(doc.data()));
+                let totalWithdrawn = 0;
+                
+                querySnapshot.forEach(doc => {
+                    const request = doc.data();
+                    withdrawals.push(request);
+                    if (request.status === 'approved') {
+                        totalWithdrawn += request.amount;
+                    }
+                });
+                
                 withdrawals.sort((a, b) => (b.requestedAt?.seconds || 0) - (a.requestedAt?.seconds || 0));
                 historyList.innerHTML = '';
                 withdrawals.forEach(request => {
@@ -444,6 +608,9 @@
                     const date = request.requestedAt ? request.requestedAt.toDate().toLocaleDateString() : 'N/A';
                     historyList.innerHTML += `<div class="card-bg p-3 rounded-lg flex items-center justify-between"><div><p class="font-semibold">${request.amount} Rupees - ${request.method}</p><p class="text-xs text-gray-400">${date}</p></div><p class="font-bold ${statusColor} capitalize">${status}</p></div>`;
                 });
+                
+                // Update total withdrawals in profile
+                profileTotalWithdrawalsEl.textContent = totalWithdrawn;
             } catch (error) {
                 console.error("Error fetching withdrawal history: ", error);
                 historyList.innerHTML = '<p class="text-red-400">History load karne mein error aayi.</p>';
@@ -471,11 +638,28 @@
                     const referrerDoc = querySnapshot.docs[0];
                     const referrerRef = doc(db, "users", referrerDoc.id);
                     const referrerData = referrerDoc.data();
-                    await updateDoc(referrerRef, { balance: (referrerData.balance || 0) + 100 });
+                    
+                    // Update referrer's balance and referral count
+                    await updateDoc(referrerRef, { 
+                        balance: (referrerData.balance || 0) + 100,
+                        referralEarnings: (referrerData.referralEarnings || 0) + 100,
+                        totalReferrals: (referrerData.totalReferrals || 0) + 1
+                    });
+                    
+                    // Update current user's data
                     const newUserRef = doc(db, "users", currentUser.uid);
-                    await updateDoc(newUserRef, { balance: (userData.balance || 0) + 100, referredBy: referrerCode });
-                    userData.balance += 100; userData.referredBy = referrerCode;
+                    await updateDoc(newUserRef, { 
+                        balance: (userData.balance || 0) + 100, 
+                        referredBy: referrerCode 
+                    });
+                    
+                    userData.balance += 100; 
+                    userData.referredBy = referrerCode;
+                    
+                    // Reload referral data
+                    await loadReferralData();
                     updateUI();
+                    
                     if(isManualApply) showAlert("Code safaltapoorvak apply ho gaya! Aapko 100 Rupees mile hain.");
                 } else {
                     if(isManualApply) showAlert("Galat referral code.");
@@ -489,9 +673,23 @@
         async function updateBalance(amount) {
             if (!currentUser) return;
             const newBalance = (userData.balance || 0) + amount;
+            const today = new Date().toISOString().split('T')[0];
+            const newTodayEarnings = (userData.todayEarnings || 0) + (amount > 0 ? amount : 0);
+            
             const userRef = doc(db, "users", currentUser.uid);
-            await updateDoc(userRef, { balance: newBalance });
+            await updateDoc(userRef, { 
+                balance: newBalance,
+                todayEarnings: newTodayEarnings
+            });
+            
             userData.balance = newBalance;
+            userData.todayEarnings = newTodayEarnings;
+            
+            // Update UI
+            todayEarnings = newTodayEarnings;
+            todayEarningsEl.textContent = todayEarnings;
+            profileTodayEarningsEl.textContent = todayEarnings;
+            
             updateUI();
         }
 
@@ -501,11 +699,17 @@
             const paymentDetailInput = document.getElementById('payment-detail-input');
             const paymentDetail = paymentDetailInput ? paymentDetailInput.value.trim() : '';
             const minWithdrawal = appConfig.minWithdrawal || 5000;
+            const minReferrals = appConfig.minReferralsForWithdrawal || 2;
 
             if (!amount || amount <= 0) return showAlert("Kripya valid amount daalein.");
             if (amount < minWithdrawal) return showAlert(`Minimum withdrawal ${minWithdrawal} Rupees hai.`);
             if (amount > userData.balance) return showAlert("Insufficient balance.");
             if (!paymentDetail) return showAlert("Kripya payment detail daalein (UPI ID ya Paytm Number).");
+            
+            // Check referral requirement
+            if (totalReferrals < minReferrals) {
+                return showAlert(`Withdrawal ke liye aapko kam se kam ${minReferrals} logo ko refer karna hoga. Aapne abhi tak ${totalReferrals} logo ko refer kiya hai.`);
+            }
 
             try {
                 await updateBalance(-amount);
@@ -554,9 +758,10 @@
             const userRef = doc(db, "users", currentUser.uid);
 
             if (userData.lastAdWatchDate !== today) {
-                await updateDoc(userRef, { dailyAdCount: 0, lastAdWatchDate: today });
+                await updateDoc(userRef, { dailyAdCount: 0, lastAdWatchDate: today, todayEarnings: 0 });
                 userData.dailyAdCount = 0;
                 userData.lastAdWatchDate = today;
+                userData.todayEarnings = 0;
             }
 
             if (userData.dailyAdCount >= (appConfig.dailyAdLimit || 10)) {
