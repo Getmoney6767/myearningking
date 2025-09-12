@@ -744,9 +744,20 @@
         
         function shareReferralCode() {
             const text = `CashReward join karein aur paise kamayein! Bonus paane ke liye mera referral code use karein: ${userData.referralCode}`;
+            const referralLink = `https://t.me/MyEarning_King_Bot?start=${userData.referralCode}`;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
+            
             if (navigator.share) {
-                navigator.share({ title: 'CashReward Join Karein!', text: text, url: window.location.href })
-                    .catch((error) => console.error("Share failed:", error));
+                navigator.share({ 
+                    title: 'CashReward Join Karein!', 
+                    text: text, 
+                    url: referralLink 
+                }).catch((error) => {
+                    console.error("Share failed:", error);
+                    copyReferralCode();
+                });
+            } else if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.openTelegramLink(shareUrl);
             } else {
                 copyReferralCode();
                 showAlert("Share feature available nahi hai. Iske bajaye referral code copy kar diya gaya hai!");
