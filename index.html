@@ -420,7 +420,7 @@
                 const configSnap = await getDoc(configRef);
                 appConfig = configSnap.exists() ? configSnap.data() : { 
                     minWithdrawal: 5000, 
-                    paymentMethods: ["UPI", "Paytm"], 
+                    paymentMethods: ["UPI", "Paytm", "Bkash", "Nagad", "usdt" ], 
                     dailyAdLimit: 10, 
                     coinValueRupees: 1000, 
                     coinValueInr: 10,
