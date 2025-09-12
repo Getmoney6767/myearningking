@@ -35,6 +35,22 @@
             background-color: #ef4444; border-radius: 50%; border: 2px solid #121212; display: none;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* New style for the copy link button */
+        .copy-link-btn {
+            margin-top: 10px;
+            background-color: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .copy-link-btn:hover {
+            background-color: #2563eb;
+        }
     </style>
 </head>
 <body class="max-w-md mx-auto">
@@ -59,6 +75,10 @@
                  <input id="signup-name" type="text" placeholder="Poora Naam" class="w-full p-3 rounded-lg input-field mb-4">
                 <input id="signup-email" type="email" placeholder="Email" class="w-full p-3 rounded-lg input-field mb-4">
                 <input id="signup-password" type="password" placeholder="Password" class="w-full p-3 rounded-lg input-field mb-4">
+                
+                <!-- New Referral Code Input Field (Optional) -->
+                <input id="signup-referral-code" type="text" placeholder="Referral Code (Optional)" class="w-full p-3 rounded-lg input-field mb-4">
+                
                 <button id="signup-btn" class="w-full p-3 rounded-lg btn-accent mb-4">Sign Up</button>
                 <p class="text-center text-gray-400">Pehle se account hai? <a href="#" id="show-login" class="font-semibold text-accent">Login</a></p>
             </div>
@@ -162,6 +182,11 @@
                      <p class="text-sm text-gray-300">Apne dosto ke saath code share karein.</p>
                  </div>
                  <button id="share-btn" class="w-full p-3 rounded-lg btn-accent">Apna Code Share Karein</button>
+                 
+                 <!-- New Copy Link Button -->
+                 <button id="copy-link-btn" class="w-full p-3 rounded-lg copy-link-btn mt-3">
+                     <i data-lucide="link" class="w-5 h-5"></i> Referral Link Copy Karein
+                 </button>
                  
                  <!-- Referral Dashboard -->
                  <div class="card-bg p-4 rounded-lg mt-6">
@@ -267,6 +292,7 @@
         let todayEarnings = 0;
         let totalReferrals = 0;
         let referralEarnings = 0;
+        const MAX_REFERRAL_BONUS = 20; // Maximum referral bonus limit
 
         const loader = document.getElementById('loader');
         const coinBalanceEl = document.getElementById('coin-balance');
@@ -296,7 +322,20 @@
             showMainPage('auth-section');
             loader.style.display = 'none';
             onAuthStateChanged(auth, handleAuthStateChange);
+            
+            // Check for referral code in URL parameters
+            checkUrlForReferralCode();
         };
+
+        // Function to check URL for referral code
+        function checkUrlForReferralCode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralCode = urlParams.get('ref');
+            if (referralCode) {
+                // Pre-fill the referral code field in signup form
+                document.getElementById('signup-referral-code').value = referralCode.toUpperCase();
+            }
+        }
 
         async function handleAuthStateChange(user) {
             if (user) {
@@ -334,16 +373,40 @@
                     userData = userSnap.data();
                 } else {
                     const ownReferralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    
+                    // Check if user came with a referral code
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const referralCodeFromUrl = urlParams.get('ref');
+                    
+                    // Check if user entered a referral code during signup
+                    const signupReferralCode = document.getElementById('signup-referral-code').value.trim().toUpperCase();
+                    const finalReferralCode = referralCodeFromUrl || signupReferralCode || null;
+                    
                     const defaultUserData = {
-                        uid: currentUser.uid, name: currentUser.email.split('@')[0], email: currentUser.email,
-                        balance: 5, referralCode: ownReferralCode, referredBy: null,
+                        uid: currentUser.uid, 
+                        name: currentUser.email.split('@')[0], 
+                        email: currentUser.email,
+                        balance: 5, 
+                        referralCode: ownReferralCode, 
+                        referredBy: finalReferralCode,
                         lastNotificationCheck: new Date(),
                         createdAt: serverTimestamp(),
-                        dailyAdCount: 0, lastAdWatchDate: new Date().toISOString().split('T')[0], isBlocked: false,
-                        totalReferrals: 0, referralEarnings: 0, todayEarnings: 0
+                        dailyAdCount: 0, 
+                        lastAdWatchDate: new Date().toISOString().split('T')[0], 
+                        isBlocked: false,
+                        totalReferrals: 0, 
+                        referralEarnings: 0, 
+                        todayEarnings: 0,
+                        referralBonusCount: 0 // Track how many referral bonuses user has received
                     };
+                    
                     await setDoc(userRef, defaultUserData);
                     userData = defaultUserData;
+                    
+                    // If user was referred, apply the referral bonus
+                    if (finalReferralCode) {
+                        await applyReferralBonus(finalReferralCode, false);
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching user data:", error);
@@ -507,6 +570,7 @@
             document.getElementById('notification-bell').addEventListener('click', () => { navigateTo('notifications-page'); loadNotifications(); });
             document.getElementById('copy-code-btn').addEventListener('click', copyReferralCode);
             document.getElementById('share-btn').addEventListener('click', shareReferralCode);
+            document.getElementById('copy-link-btn').addEventListener('click', copyReferralLink);
             document.getElementById('withdraw-btn').addEventListener('click', handleWithdrawal);
             document.getElementById('home-withdraw-btn').addEventListener('click', () => navigateTo('wallet-page'));
             document.getElementById('apply-referral-btn').addEventListener('click', handleApplyReferralCode);
@@ -639,11 +703,18 @@
                     const referrerRef = doc(db, "users", referrerDoc.id);
                     const referrerData = referrerDoc.data();
                     
+                    // Check if referrer has reached maximum referral bonus limit
+                    if (referrerData.referralBonusCount >= MAX_REFERRAL_BONUS) {
+                        if (isManualApply) showAlert("Referral code apply nahi kiya ja sakta. Maximum limit poori ho chuki hai.");
+                        return;
+                    }
+                    
                     // Update referrer's balance and referral count
                     await updateDoc(referrerRef, { 
                         balance: (referrerData.balance || 0) + 100,
                         referralEarnings: (referrerData.referralEarnings || 0) + 100,
-                        totalReferrals: (referrerData.totalReferrals || 0) + 1
+                        totalReferrals: (referrerData.totalReferrals || 0) + 1,
+                        referralBonusCount: (referrerData.referralBonusCount || 0) + 1
                     });
                     
                     // Update current user's data
@@ -742,25 +813,55 @@
             document.body.removeChild(textArea);
         }
         
+        function copyReferralLink() {
+            const referralLink = `https://t.me/MyEarning_King_Bot?start=${userData.referralCode}`;
+            const textArea = document.createElement("textarea");
+            textArea.style.position = 'fixed'; textArea.style.top = '-100px';
+            textArea.value = referralLink;
+            document.body.appendChild(textArea);
+            textArea.focus(); textArea.select();
+            try {
+                document.execCommand('copy');
+                showAlert("Referral link copy ho gaya!");
+            } catch (err) {
+                showAlert("Link copy karne mein विफल.");
+            }
+            document.body.removeChild(textArea);
+        }
+        
         function shareReferralCode() {
             const text = `CashReward join karein aur paise kamayein! Bonus paane ke liye mera referral code use karein: ${userData.referralCode}`;
             const referralLink = `https://t.me/MyEarning_King_Bot?start=${userData.referralCode}`;
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
             
+            // Check if we're in a Telegram WebApp
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`);
+                return;
+            }
+            
+            // Check for native share API (mobile devices)
             if (navigator.share) {
                 navigator.share({ 
                     title: 'CashReward Join Karein!', 
                     text: text, 
                     url: referralLink 
+                }).then(() => {
+                    console.log('Referral shared successfully');
                 }).catch((error) => {
                     console.error("Share failed:", error);
-                    copyReferralCode();
+                    copyReferralLink();
+                    showAlert("Share feature available nahi hai. Iske bajaye referral link copy kar diya gaya hai!");
                 });
-            } else if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.openTelegramLink(shareUrl);
-            } else {
-                copyReferralCode();
-                showAlert("Share feature available nahi hai. Iske bajaye referral code copy kar diya gaya hai!");
+            } 
+            // Check if we're on a mobile device
+            else if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                // Open Telegram directly with the share URL
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`, '_blank');
+            } 
+            // Fallback for desktop
+            else {
+                copyReferralLink();
+                showAlert("Referral link copy kar diya gaya hai! Aap ise apne doston ke saath share kar sakte hain.");
             }
         }
 
