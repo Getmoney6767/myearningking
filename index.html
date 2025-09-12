@@ -84,7 +84,7 @@
                 <div class="card-bg p-4 rounded-lg flex items-center justify-between">
                     <div>
                         <p class="text-gray-400 text-sm">Your Balance</p>
-                        <p class="text-3xl font-bold"><span id="coin-balance">0</span> Coins</p>
+                        <p class="text-3xl font-bold"><span id="coin-balance">0</span> Rupees</p>
                     </div>
                     <button id="home-withdraw-btn" class="bg-white text-black font-semibold px-6 py-2 rounded-lg">Withdraw</button>
                 </div>
@@ -114,8 +114,8 @@
                 <h2 class="text-xl font-bold text-center">Mera Wallet</h2>
                 <div class="card-bg p-4 rounded-lg">
                     <h3 class="font-semibold mb-3">Earnings Withdraw Karein</h3>
-                    <p class="text-sm text-gray-400 mb-1">Current Balance: <span class="font-bold text-accent"><span id="wallet-coin-balance">0</span> Coins</span></p>
-                    <p class="text-sm text-gray-400 mb-2">Minimum Withdrawal: <span id="min-withdrawal-info">...</span> Coins</p>
+                    <p class="text-sm text-gray-400 mb-1">Current Balance: <span class="font-bold text-accent"><span id="wallet-coin-balance">0</span> Rupees</span></p>
+                    <p class="text-sm text-gray-400 mb-2">Minimum Withdrawal: <span id="min-withdrawal-info">...</span> Rupees</p>
                     <p class="text-sm text-gray-400 mb-4 font-semibold" id="coin-value-info">...</p>
                     <input id="withdraw-amount" type="number" placeholder="Coin amount daalein" class="w-full p-3 rounded-lg input-field mb-3">
                     <select id="withdraw-method" class="w-full p-3 rounded-lg input-field mb-3"></select>
@@ -276,7 +276,7 @@
             const configRef = doc(db, "config", "main");
             try {
                 const configSnap = await getDoc(configRef);
-                appConfig = configSnap.exists() ? configSnap.data() : { minWithdrawal: 5000, paymentMethods: ["UPI", "Paytm"], dailyAdLimit: 10, coinValueCoins: 1000, coinValueInr: 10 };
+                appConfig = configSnap.exists() ? configSnap.data() : { minWithdrawal: 5000, paymentMethods: ["UPI", "Paytm"], dailyAdLimit: 10, coinValueRupees: 1000, coinValueInr: 10 };
             } catch (error) {
                 console.error("Error fetching app config:", error);
             }
@@ -290,8 +290,8 @@
             profileNameEl.textContent = userData.name || 'No Name';
             profileEmailEl.textContent = userData.email || 'No Email';
             referralCodeEl.textContent = userData.referralCode || '...';
-            minWithdrawalInfoEl.textContent = `${appConfig.minWithdrawal || 5000} Coins`;
-            coinValueInfoEl.textContent = `${appConfig.coinValueCoins || 1000} Coins = ₹${appConfig.coinValueInr || 10}`;
+            minWithdrawalInfoEl.textContent = `${appConfig.minWithdrawal || 5000} Rupees`;
+            coinValueInfoEl.textContent = `${appConfig.coinValueRupees || 1000} Rupees = ₹${appConfig.coinValueInr || 10}`;
             withdrawMethodSelect.innerHTML = '';
             (appConfig.paymentMethods || []).forEach(method => {
                 const option = document.createElement('option');
@@ -442,7 +442,7 @@
                     if (status === 'approved') statusColor = 'text-green-400';
                     else if (status === 'rejected') statusColor = 'text-red-400';
                     const date = request.requestedAt ? request.requestedAt.toDate().toLocaleDateString() : 'N/A';
-                    historyList.innerHTML += `<div class="card-bg p-3 rounded-lg flex items-center justify-between"><div><p class="font-semibold">${request.amount} Coins - ${request.method}</p><p class="text-xs text-gray-400">${date}</p></div><p class="font-bold ${statusColor} capitalize">${status}</p></div>`;
+                    historyList.innerHTML += `<div class="card-bg p-3 rounded-lg flex items-center justify-between"><div><p class="font-semibold">${request.amount} Rupees - ${request.method}</p><p class="text-xs text-gray-400">${date}</p></div><p class="font-bold ${statusColor} capitalize">${status}</p></div>`;
                 });
             } catch (error) {
                 console.error("Error fetching withdrawal history: ", error);
@@ -476,7 +476,7 @@
                     await updateDoc(newUserRef, { balance: (userData.balance || 0) + 100, referredBy: referrerCode });
                     userData.balance += 100; userData.referredBy = referrerCode;
                     updateUI();
-                    if(isManualApply) showAlert("Code safaltapoorvak apply ho gaya! Aapko 100 coins mile hain.");
+                    if(isManualApply) showAlert("Code safaltapoorvak apply ho gaya! Aapko 100 Rupees mile hain.");
                 } else {
                     if(isManualApply) showAlert("Galat referral code.");
                 }
@@ -503,7 +503,7 @@
             const minWithdrawal = appConfig.minWithdrawal || 5000;
 
             if (!amount || amount <= 0) return showAlert("Kripya valid amount daalein.");
-            if (amount < minWithdrawal) return showAlert(`Minimum withdrawal ${minWithdrawal} coins hai.`);
+            if (amount < minWithdrawal) return showAlert(`Minimum withdrawal ${minWithdrawal} Rupees hai.`);
             if (amount > userData.balance) return showAlert("Insufficient balance.");
             if (!paymentDetail) return showAlert("Kripya payment detail daalein (UPI ID ya Paytm Number).");
 
@@ -599,7 +599,7 @@
 
                 if (rewardAmount > 0) {
                     updateBalance(rewardAmount);
-                    showAlert(`Congratulations! You have won ${rewardAmount} coins.`);
+                    showAlert(`Congratulations! You have won ${rewardAmount} Rupees.`);
                 }
                 updateAdsLeftCount();
             }).catch(e => {
