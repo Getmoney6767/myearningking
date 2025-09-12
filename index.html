@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashReward App</title>
+    <title>My Earning King App</title>
     
     <!-- Aapka Naya Ad Code -->
     <script src='//libtl.com/sdk.js' data-zone='9391539' data-sdk='show_9391539'></script>
@@ -62,14 +62,14 @@
 
     <!-- Authentication Section -->
     <div id="auth-section" class="min-h-screen p-6 flex-col justify-center main-page">
-        <h1 class="text-4xl font-bold text-center mb-2 text-accent">CashReward</h1>
-        <p class="text-center text-gray-400 mb-8">Jaari rakhne ke liye Login ya Signup karein</p>
+        <h1 class="text-4xl font-bold text-center mb-2 text-accent">My Earning King</h1>
+        <p class="text-center text-gray-400 mb-8">To continue, please Login or Sign Up.</p>
         <div id="auth-container">
             <div id="login-view">
                 <input id="login-email" type="email" placeholder="Email" class="w-full p-3 rounded-lg input-field mb-4">
                 <input id="login-password" type="password" placeholder="Password" class="w-full p-3 rounded-lg input-field mb-4">
                 <button id="login-btn" class="w-full p-3 rounded-lg btn-accent mb-4">Login</button>
-                <p class="text-center text-gray-400">Account nahi hai? <a href="#" id="show-signup" class="font-semibold text-accent">Sign Up</a></p>
+                <p class="text-center text-gray-400">Don't have an account? Create one now! <a href="#" id="show-signup" class="font-semibold text-accent">Sign Up</a></p>
             </div>
             <div id="signup-view" class="hidden">
                  <input id="signup-name" type="text" placeholder="Poora Naam" class="w-full p-3 rounded-lg input-field mb-4">
@@ -80,7 +80,7 @@
                 <input id="signup-referral-code" type="text" placeholder="Referral Code (Optional)" class="w-full p-3 rounded-lg input-field mb-4">
                 
                 <button id="signup-btn" class="w-full p-3 rounded-lg btn-accent mb-4">Sign Up</button>
-                <p class="text-center text-gray-400">Pehle se account hai? <a href="#" id="show-login" class="font-semibold text-accent">Login</a></p>
+                <p class="text-center text-gray-400">Already have an account? Log in here! <a href="#" id="show-login" class="font-semibold text-accent">Login</a></p>
             </div>
         </div>
     </div>
@@ -88,7 +88,7 @@
     <!-- Main App Container -->
     <div id="app-container" class="min-h-screen flex-col main-page">
         <header class="flex items-center justify-between p-4 sticky top-0 bg-opacity-80 backdrop-blur-md z-10 dark-bg">
-            <h1 class="text-xl font-bold">CashReward</h1>
+            <h1 class="text-xl font-bold">My Earning King</h1>
             <div class="flex items-center space-x-4">
                 <div id="notification-bell" class="relative cursor-pointer">
                     <i data-lucide="bell" class="w-6 h-6"></i>
@@ -146,7 +146,7 @@
             <div id="wallet-page" class="p-4 space-y-6 sub-page">
                 <h2 class="text-xl font-bold text-center">Mera Wallet</h2>
                 <div class="card-bg p-4 rounded-lg">
-                    <h3 class="font-semibold mb-3">Earnings Withdraw Karein</h3>
+                    <h3 class="font-semibold mb-3">Earnings Withdraw </h3>
                     <p class="text-sm text-gray-400 mb-1">Current Balance: <span class="font-bold text-accent"><span id="wallet-coin-balance">0</span> Rupees</span></p>
                     <p class="text-sm text-gray-400 mb-2">Minimum Withdrawal: <span id="min-withdrawal-info">...</span> Rupees</p>
                     <p class="text-sm text-gray-400 mb-4 font-semibold" id="coin-value-info">...</p>
@@ -155,8 +155,8 @@
                     <div id="withdrawal-requirements" class="bg-yellow-900 text-yellow-200 p-3 rounded-lg mb-4 text-sm">
                         <p class="font-semibold">Withdrawal Requirements:</p>
                         <p>✓ Minimum <span id="min-withdrawal-amount">5000</span> Rupees</p>
-                        <p id="referral-requirement">✓ At least <span class="font-bold">2 referrals</span> required</p>
-                        <p id="referral-status" class="mt-2">Your referrals: <span id="user-referral-count">0</span>/2</p>
+                        <p id="referral-requirement">✓ At least <span class="font-bold">20 referrals</span> required</p>
+                        <p id="referral-status" class="mt-2">Your referrals: <span id="user-referral-count">0</span>/20</p>
                     </div>
                     
                     <input id="withdraw-amount" type="number" placeholder="Enter withdrawal amount" class="w-full p-3 rounded-lg input-field mb-3">
@@ -174,18 +174,18 @@
             <div id="refer-page" class="p-4 space-y-6 sub-page">
                  <h2 class="text-xl font-bold text-center">Refer & Earn</h2>
                  <div class="card-bg p-6 rounded-lg text-center">
-                     <p class="text-gray-400 mb-2">Aapka Referral Code</p>
+                     <p class="text-gray-400 mb-2">Your Referral Code</p>
                      <div class="bg-gray-800 p-3 rounded-lg flex items-center justify-center mb-4">
                          <span id="referral-code" class="text-2xl font-bold tracking-widest">LOADING...</span>
                          <button id="copy-code-btn" class="ml-4"><i data-lucide="copy" class="w-6 h-6 text-gray-400"></i></button>
                      </div>
-                     <p class="text-sm text-gray-300">Apne dosto ke saath code share karein.</p>
+                     <p class="text-sm text-gray-300">Invite your friends and earn money.</p>
                  </div>
-                 <button id="share-btn" class="w-full p-3 rounded-lg btn-accent">Apna Code Share Karein</button>
+                 <button id="share-btn" class="w-full p-3 rounded-lg btn-accent">Share Your Code</button>
                  
                  <!-- New Copy Link Button -->
                  <button id="copy-link-btn" class="w-full p-3 rounded-lg copy-link-btn mt-3">
-                     <i data-lucide="link" class="w-5 h-5"></i> Referral Link Copy Karein
+                     <i data-lucide="link" class="w-5 h-5"></i> Copy Referral Code
                  </button>
                  
                  <!-- Referral Dashboard -->
@@ -205,9 +205,9 @@
                  </div>
                  
                  <div class="card-bg p-4 rounded-lg mt-6">
-                    <h3 class="font-semibold mb-3 text-center">Kisi ka Referral Code Hai?</h3>
-                    <input id="enter-referral-code" type="text" placeholder="Yahan code daalein" class="w-full p-3 rounded-lg input-field mb-3">
-                    <button id="apply-referral-btn" class="w-full p-3 rounded-lg btn-outline-accent">Code Apply Karein</button>
+                    <h3 class="font-semibold mb-3 text-center">Do you any referral code?</h3>
+                    <input id="enter-referral-code" type="text" placeholder="Enter invite code" class="w-full p-3 rounded-lg input-field mb-3">
+                    <button id="apply-referral-btn" class="w-full p-3 rounded-lg btn-outline-accent">Apply your code</button>
                  </div>
             </div>
 
@@ -640,7 +640,7 @@
                 await updateDoc(doc(db, "users", currentUser.uid), { lastNotificationCheck: serverTimestamp() });
             } catch (error) {
                 console.error("Error loading notifications:", error);
-                listEl.innerHTML = '<p class="text-red-400">Notifications load karne mein error aayi.</p>';
+                listEl.innerHTML = '<p class="text-red-400">There was an error loading notifications..</p>';
             }
         }
 
@@ -651,7 +651,7 @@
             try {
                 const querySnapshot = await getDocs(q);
                 if (querySnapshot.empty) {
-                    historyList.innerHTML = '<p class="text-gray-400">Aapne abhi tak koi withdrawal nahi kiya hai.</p>';
+                    historyList.innerHTML = '<p class="text-gray-400">No withdrawal records found.</p>';
                     return;
                 }
                 const withdrawals = [];
@@ -714,8 +714,8 @@
                     
                     // Update referrer's balance and referral count
                     await updateDoc(referrerRef, { 
-                        balance: (referrerData.balance || 0) + 100,
-                        referralEarnings: (referrerData.referralEarnings || 0) + 100,
+                        balance: (referrerData.balance || 0) + 20,
+                        referralEarnings: (referrerData.referralEarnings || 0) + 20,
                         totalReferrals: (referrerData.totalReferrals || 0) + 1,
                         referralBonusCount: (referrerData.referralBonusCount || 0) + 1
                     });
@@ -723,24 +723,24 @@
                     // Update current user's data
                     const newUserRef = doc(db, "users", currentUser.uid);
                     await updateDoc(newUserRef, { 
-                        balance: (userData.balance || 0) + 100, 
+                        balance: (userData.balance || 0) + 20, 
                         referredBy: referrerCode 
                     });
                     
-                    userData.balance += 100; 
+                    userData.balance += 20; 
                     userData.referredBy = referrerCode;
                     
                     // Reload referral data
                     await loadReferralData();
                     updateUI();
                     
-                    if(isManualApply) showAlert("Code safaltapoorvak apply ho gaya! Aapko 100 Rupees mile hain.");
+                    if(isManualApply) showAlert("The code has been successfully applied! You have received 20 Rupees.");
                 } else {
-                    if(isManualApply) showAlert("Galat referral code.");
+                    if(isManualApply) showAlert("Wrong referral code.");
                 }
             } catch(error) {
                 console.error("Error applying referral bonus: ", error);
-                if(isManualApply) showAlert("Code apply karte samay error aayi.");
+                if(isManualApply) showAlert("There was an error while applying the code.");
             }
         }
 
@@ -809,9 +809,9 @@
             textArea.focus(); textArea.select();
             try {
                 document.execCommand('copy');
-                showAlert("Referral code copy ho gaya!");
+                showAlert("Referral code has been copied.!");
             } catch (err) {
-                showAlert("Code copy karne mein विफल.");
+                showAlert("Failed to copy the code.");
             }
             document.body.removeChild(textArea);
         }
@@ -825,15 +825,15 @@
             textArea.focus(); textArea.select();
             try {
                 document.execCommand('copy');
-                showAlert("Referral link copy ho gaya!");
+                showAlert("Referral code has been copied.");
             } catch (err) {
-                showAlert("Link copy karne mein विफल.");
+                showAlert("Failed to copy the code..");
             }
             document.body.removeChild(textArea);
         }
         
         function shareReferralCode() {
-            const text = `CashReward join karein aur paise kamayein! Bonus paane ke liye mera referral code use karein: ${userData.referralCode}`;
+            const text = `Join My Earning King and start earning money! Use my referral code to get a bonus.: ${userData.referralCode}`;
             const referralLink = `https://t.me/MyEarning_King_Bot?start=${userData.referralCode}`;
             
             // Check if we're in a Telegram WebApp
@@ -845,7 +845,7 @@
             // Check for native share API (mobile devices)
             if (navigator.share) {
                 navigator.share({ 
-                    title: 'CashReward Join Karein!', 
+                    title: 'My Earning King Join Now!', 
                     text: text, 
                     url: referralLink 
                 }).then(() => {
@@ -853,7 +853,7 @@
                 }).catch((error) => {
                     console.error("Share failed:", error);
                     copyReferralLink();
-                    showAlert("Share feature available nahi hai. Iske bajaye referral link copy kar diya gaya hai!");
+                    showAlert("The share feature is not available. Instead, the referral link has been copied.!");
                 });
             } 
             // Check if we're on a mobile device
@@ -864,7 +864,7 @@
             // Fallback for desktop
             else {
                 copyReferralLink();
-                showAlert("Referral link copy kar diya gaya hai! Aap ise apne doston ke saath share kar sakte hain.");
+                showAlert("eferral link has been copied! You can share it with your friends.");
             }
         }
 
@@ -880,11 +880,11 @@
             }
 
             if (userData.dailyAdCount >= (appConfig.dailyAdLimit || 10)) {
-                return showAlert("Aapki aaj ki ad dekhne ki seema poori ho gayi hai.");
+                return showAlert("You can’t watch any more ads today. Please try again tomorrow.");
             }
             
             if (typeof window.show_9391539 !== 'function') {
-                return showAlert("Ad service abhi uplabdh nahi hai. Kripya baad mein prayas karein.");
+                return showAlert("Ad service is currently unavailable. Please try again later.");
             }
             
             let adPromise;
@@ -912,7 +912,7 @@
                 
                 let rewardAmount = 0;
                 if (taskType === 'miniApp') {
-                    rewardAmount = 100; // Mini App ka zyada reward
+                    rewardAmount = 5; // Mini App ka zyada reward
                 } else if (taskType !== 'inApp') {
                     rewardAmount = 5;
                 }
@@ -924,7 +924,7 @@
                 updateAdsLeftCount();
             }).catch(e => {
                 console.error("Ad error:", e);
-                showAlert('Ad nahi dikhaya ja saka. Kripya baad mein prayas karein.');
+                showAlert('The ad could not be displayed. Please try again later.');
             });
         }
 
