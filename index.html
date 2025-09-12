@@ -343,7 +343,7 @@
                 currentUser = user;
                 await fetchUserData();
                 if (userData.isBlocked) {
-                    showAlert("Aapka account block kar diya gaya hai.");
+                    showAlert("Your account has been blocked.");
                     await signOut(auth);
                     loader.style.display = 'none';
                     return;
@@ -628,7 +628,7 @@
             try {
                 const querySnapshot = await getDocs(q);
                 if (querySnapshot.empty) {
-                    listEl.innerHTML = '<p class="text-gray-400 text-center">Koi notifications nahi hain.</p>';
+                    listEl.innerHTML = '<p class="text-gray-400 text-center">There are no notifications.</p>';
                     return;
                 }
                 listEl.innerHTML = '';
@@ -646,7 +646,7 @@
 
         async function loadWithdrawalHistory() {
             const historyList = document.getElementById('withdrawal-history-list');
-            historyList.innerHTML = '<p class="text-gray-400">History load ho rahi hai...</p>';
+            historyList.innerHTML = '<p class="text-gray-400">Loading history...</p>';
             const q = query(collection(db, "withdrawals"), where("userId", "==", currentUser.uid));
             try {
                 const querySnapshot = await getDocs(q);
@@ -685,11 +685,11 @@
         }
         
         async function handleApplyReferralCode() {
-            if (userData.referredBy) return showAlert("Aap pehle hi ek referral code istemal kar chuke hain.");
+            if (userData.referredBy) return showAlert("You have already used a referral code.");
             const codeInput = document.getElementById('enter-referral-code');
             const code = codeInput.value.trim().toUpperCase();
             if (!code) return showAlert("Kripya ek code daalein.");
-            if (code === userData.referralCode) return showAlert("Aap apna khud ka code istemal nahi kar sakte.");
+            if (code === userData.referralCode) return showAlert("You cannot use your own referral code.");
             loader.style.display = 'flex';
             await applyReferralBonus(code, true);
             codeInput.value = '';
@@ -708,7 +708,7 @@
                     
                     // Check if referrer has reached maximum referral bonus limit
                     if (referrerData.referralBonusCount >= MAX_REFERRAL_BONUS) {
-                        if (isManualApply) showAlert("Referral code apply nahi kiya ja sakta. Maximum limit poori ho chuki hai.");
+                        if (isManualApply) showAlert("Referral code cannot be applied. The maximum limit has been reached..");
                         return;
                     }
                     
@@ -776,7 +776,7 @@
             const minReferrals = appConfig.minReferralsForWithdrawal || 2;
 
             if (!amount || amount <= 0) return showAlert("Kripya valid amount daalein.");
-            if (amount < minWithdrawal) return showAlert(`Minimum withdrawal ${minWithdrawal} Rupees hai.`);
+            if (amount < minWithdrawal) return showAlert(`Minimum withdrawal ${minWithdrawal} Rupees.`);
             if (amount > userData.balance) return showAlert("Insufficient balance.");
             if (!paymentDetail) return showAlert("Enter Your Payment details (UPI ID ya Paytm Number).");
             
