@@ -526,7 +526,7 @@
 
         function updateDynamicPaymentFields() {
             const selectedMethod = withdrawMethodSelect.value.toLowerCase();
-            let placeholder = "Detail Daalein";
+            let placeholder = "Payment details";
             if (selectedMethod.includes('upi')) placeholder = "Enter your UPI ID ";
             if (selectedMethod.includes('paytm')) placeholder = "Enter your Paytm Number";
             if (selectedMethod.includes('Bkash')) placeholder = "Enter your BKash Number";
@@ -778,11 +778,11 @@
             if (!amount || amount <= 0) return showAlert("Kripya valid amount daalein.");
             if (amount < minWithdrawal) return showAlert(`Minimum withdrawal ${minWithdrawal} Rupees hai.`);
             if (amount > userData.balance) return showAlert("Insufficient balance.");
-            if (!paymentDetail) return showAlert("Kripya payment detail daalein (UPI ID ya Paytm Number).");
+            if (!paymentDetail) return showAlert("Enter Your Payment details (UPI ID ya Paytm Number).");
             
             // Check referral requirement
             if (totalReferrals < minReferrals) {
-                return showAlert(`Withdrawal ke liye aapko kam se kam ${minReferrals} logo ko refer karna hoga. Aapne abhi tak ${totalReferrals} logo ko refer kiya hai.`);
+                return showAlert(`You must refer ${minReferrals} users to become eligible for withdrawal. You currently have ${totalReferrals} active referrals.`);
             }
 
             try {
@@ -791,11 +791,11 @@
                     userId: currentUser.uid, userName: userData.name, userEmail: userData.email,
                     amount: amount, method: method, paymentDetail: paymentDetail, status: "pending", requestedAt: serverTimestamp()
                 });
-                showAlert("Withdrawal request safaltapoorvak submit ho gayi hai!");
+                showAlert("Your withdrawal request has been submitted successfully.!");
                 document.getElementById('withdraw-amount').value = '';
                 paymentDetailInput.value = '';
             } catch (error) {
-                showAlert("Request submit karne mein error: " + error.message);
+                showAlert("There was an error submitting your request: " + error.message);
                 await updateBalance(amount);
             }
         }
