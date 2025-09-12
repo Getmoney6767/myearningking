@@ -104,13 +104,13 @@
                 <div id="settings-page" class="page">
                     <h1 class="text-3xl font-bold mb-6">App Settings</h1>
                     <div class="stat-card p-6 max-w-lg">
-                        <div class="mb-6"><label for="min-withdrawal" class="block font-semibold mb-2">Minimum Withdrawal (Coins)</label><input type="number" id="min-withdrawal" class="w-full px-4 py-2 border rounded-lg"></div>
+                        <div class="mb-6"><label for="min-withdrawal" class="block font-semibold mb-2">Minimum Withdrawal (Rupees)</label><input type="number" id="min-withdrawal" class="w-full px-4 py-2 border rounded-lg"></div>
                         <div class="mb-6"><label for="daily-ad-limit" class="block font-semibold mb-2">Daily Ad Watch Limit</label><input type="number" id="daily-ad-limit" class="w-full px-4 py-2 border rounded-lg"></div>
                         <div class="mb-6">
                             <label class="block font-semibold mb-2">Coin Value</label>
                             <div class="flex items-center space-x-2">
-                                <input type="number" id="coin-value-coins" class="w-full px-4 py-2 border rounded-lg">
-                                <span>Coins = ₹</span>
+                                <input type="number" id="coin-value-Rupees" class="w-full px-4 py-2 border rounded-lg">
+                                <span>Rupees = ₹</span>
                                 <input type="number" id="coin-value-inr" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
@@ -263,7 +263,7 @@
                 const config = docSnap.data();
                 document.getElementById('min-withdrawal').value = config.minWithdrawal || '';
                 document.getElementById('daily-ad-limit').value = config.dailyAdLimit || '';
-                document.getElementById('coin-value-coins').value = config.coinValueCoins || '';
+                document.getElementById('coin-value-Rupees').value = config.coinValueRupees || '';
                 document.getElementById('coin-value-inr').value = config.coinValueInr || '';
                 document.getElementById('payment-methods').value = (config.paymentMethods || []).join(',');
             }
@@ -317,12 +317,12 @@
         async function saveSettings() {
             const minWithdrawal = parseInt(document.getElementById('min-withdrawal').value);
             const dailyAdLimit = parseInt(document.getElementById('daily-ad-limit').value);
-            const coinValueCoins = parseInt(document.getElementById('coin-value-coins').value);
+            const coinValueRupees = parseInt(document.getElementById('coin-value-Rupees').value);
             const coinValueInr = parseInt(document.getElementById('coin-value-inr').value);
             const paymentMethods = document.getElementById('payment-methods').value.split(',').map(s => s.trim()).filter(Boolean);
-            if (isNaN(minWithdrawal) || isNaN(dailyAdLimit) || isNaN(coinValueCoins) || isNaN(coinValueInr)) return showAlert("Kripya sabhi number fields mein valid number daalein.");
+            if (isNaN(minWithdrawal) || isNaN(dailyAdLimit) || isNaN(coinValueRupees) || isNaN(coinValueInr)) return showAlert("Kripya sabhi number fields mein valid number daalein.");
             try {
-                await setDoc(doc(db, "config", "main"), { minWithdrawal, dailyAdLimit, coinValueCoins, coinValueInr, paymentMethods }, { merge: true });
+                await setDoc(doc(db, "config", "main"), { minWithdrawal, dailyAdLimit, coinValueRupees, coinValueInr, paymentMethods }, { merge: true });
                 showAlert("Settings safaltapoorvak save ho gayi hain!");
             } catch (error) { showAlert(`Settings save karne mein error: ${error.message}`); }
         }
