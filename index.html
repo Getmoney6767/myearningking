@@ -159,7 +159,7 @@
                         <p id="referral-status" class="mt-2">Your referrals: <span id="user-referral-count">0</span>/2</p>
                     </div>
                     
-                    <input id="withdraw-amount" type="number" placeholder="Coin amount daalein" class="w-full p-3 rounded-lg input-field mb-3">
+                    <input id="withdraw-amount" type="number" placeholder="Enter withdrawal amount" class="w-full p-3 rounded-lg input-field mb-3">
                     <select id="withdraw-method" class="w-full p-3 rounded-lg input-field mb-3"></select>
                     <div id="payment-details-container"></div>
                     <button id="withdraw-btn" class="w-full p-3 rounded-lg btn-accent mt-3">Request Withdrawal</button>
@@ -527,8 +527,11 @@
         function updateDynamicPaymentFields() {
             const selectedMethod = withdrawMethodSelect.value.toLowerCase();
             let placeholder = "Detail Daalein";
-            if (selectedMethod.includes('upi')) placeholder = "Apni UPI ID Daalein";
-            if (selectedMethod.includes('paytm')) placeholder = "Apna Paytm Number Daalein";
+            if (selectedMethod.includes('upi')) placeholder = "Enter your UPI ID Daalein";
+            if (selectedMethod.includes('paytm')) placeholder = "Enter your Paytm Number";
+            if (selectedMethod.includes('Bkash')) placeholder = "Enter your BKash Number";
+            if (selectedMethod.includes('Nagad')) placeholder = "Enter your Nagad Number";
+            if (selectedMethod.includes('Usdt')) placeholder = "Enter your TRC20 Address";  
             paymentDetailsContainer.innerHTML = `<input id="payment-detail-input" type="text" placeholder="${placeholder}" class="w-full p-3 rounded-lg input-field">`;
         }
 
