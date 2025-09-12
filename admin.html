@@ -65,6 +65,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Total Users</h2><p id="total-users" class="text-4xl font-bold mt-2">0</p></div>
                         <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Pending Withdrawals</h2><p id="pending-withdrawals" class="text-4xl font-bold mt-2">0</p></div>
+                        <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Total Referrals</h2><p id="total-referrals" class="text-4xl font-bold mt-2">0</p></div>
                     </div>
                 </div>
 
@@ -73,7 +74,7 @@
                     <h1 class="text-3xl font-bold mb-6">User Management</h1>
                     <div class="bg-white shadow rounded-lg overflow-x-auto">
                         <table class="min-w-full">
-                            <thead><tr><th>Name</th><th>Email</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+                            <thead><tr><th>Name</th><th>Email</th><th>Balance</th><th>Referrals</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody id="users-table-body"></tbody>
                         </table>
                     </div>
@@ -84,7 +85,7 @@
                     <h1 class="text-3xl font-bold mb-6">Withdrawal Requests</h1>
                      <div class="bg-white shadow rounded-lg overflow-x-auto">
                         <table>
-                            <thead><tr><th>User Name</th><th>Amount</th><th>Method</th><th>Details</th><th>Requested At</th><th>Actions</th></tr></thead>
+                            <thead><tr><th>User Name</th><th>Amount</th><th>Method</th><th>Details</th><th>Requested At</th><th>Referrals</th><th>Actions</th></tr></thead>
                             <tbody id="withdrawals-table-body"></tbody>
                         </table>
                     </div>
@@ -114,6 +115,7 @@
                                 <input type="number" id="coin-value-inr" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
+                        <div class="mb-6"><label for="min-referrals" class="block font-semibold mb-2">Minimum Referrals for Withdrawal</label><input type="number" id="min-referrals" class="w-full px-4 py-2 border rounded-lg"></div>
                         <div class="mb-6"><label class="block font-semibold mb-2">Payment Methods (comma-separated)</label><input type="text" id="payment-methods" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g. UPI,Paytm"></div>
                         <button id="save-settings-btn" class="btn btn-primary">Save Settings</button>
                     </div>
@@ -215,8 +217,21 @@
         }
 
         function loadDashboardData() {
-            onSnapshot(collection(db, "users"), snap => { document.getElementById('total-users').textContent = snap.size; });
-            onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "pending")), snap => { document.getElementById('pending-withdrawals').textContent = snap.size; });
+            onSnapshot(collection(db, "users"), snap => { 
+                document.getElementById('total-users').textContent = snap.size; 
+                
+                // Calculate total referrals
+                let totalRefs = 0;
+                snap.forEach(doc => {
+                    const userData = doc.data();
+                    totalRefs += userData.totalReferrals || 0;
+                });
+                document.getElementById('total-referrals').textContent = totalRefs;
+            });
+            
+            onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "pending")), snap => { 
+                document.getElementById('pending-withdrawals').textContent = snap.size; 
+            });
         }
 
         function loadUsers() {
@@ -226,8 +241,9 @@
                 snapshot.forEach(doc => {
                     const user = doc.data();
                     const isBlocked = user.isBlocked || false;
+                    const referrals = user.totalReferrals || 0;
                     const row = `<tr>
-                        <td>${user.name || 'N/A'}</td><td>${user.email}</td><td>${user.balance || 0}</td>
+                        <td>${user.name || 'N/A'}</td><td>${user.email}</td><td>${user.balance || 0}</td><td>${referrals}</td>
                         <td><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">${isBlocked ? 'Blocked' : 'Active'}</span></td>
                         <td><button class="btn text-xs ${isBlocked ? 'btn-success' : 'btn-danger'}" onclick="window.toggleBlockUser('${doc.id}', ${isBlocked})">${isBlocked ? 'Unblock' : 'Block'}</button></td>
                     </tr>`;
@@ -240,12 +256,26 @@
             const withdrawalsTableBody = document.getElementById('withdrawals-table-body');
             onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "pending")), (snapshot) => {
                 withdrawalsTableBody.innerHTML = '';
-                snapshot.forEach(docSnap => {
+                snapshot.forEach(async (docSnap) => {
                     const request = docSnap.data();
                     const requestedDate = request.requestedAt?.toDate().toLocaleString() || 'N/A';
+                    
+                    // Get user's referral count
+                    let referralCount = 0;
+                    try {
+                        const userDoc = await getDoc(doc(db, "users", request.userId));
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+                            referralCount = userData.totalReferrals || 0;
+                        }
+                    } catch (error) {
+                        console.error("Error getting user data:", error);
+                    }
+                    
                     const row = `<tr>
                         <td>${request.userName || 'N/A'}</td><td>${request.amount}</td><td>${request.method}</td>
                         <td>${request.paymentDetail || 'N/A'}</td><td>${requestedDate}</td>
+                        <td>${referralCount}</td>
                         <td class="space-x-2">
                             <button class="btn btn-success text-xs" onclick="window.handleWithdrawal('${docSnap.id}', 'approved')">Approve</button>
                             <button class="btn btn-danger text-xs" onclick="window.handleWithdrawal('${docSnap.id}', 'rejected')">Reject</button>
@@ -265,6 +295,7 @@
                 document.getElementById('daily-ad-limit').value = config.dailyAdLimit || '';
                 document.getElementById('coin-value-Rupees').value = config.coinValueRupees || '';
                 document.getElementById('coin-value-inr').value = config.coinValueInr || '';
+                document.getElementById('min-referrals').value = config.minReferralsForWithdrawal || '';
                 document.getElementById('payment-methods').value = (config.paymentMethods || []).join(',');
             }
         }
@@ -319,12 +350,28 @@
             const dailyAdLimit = parseInt(document.getElementById('daily-ad-limit').value);
             const coinValueRupees = parseInt(document.getElementById('coin-value-Rupees').value);
             const coinValueInr = parseInt(document.getElementById('coin-value-inr').value);
+            const minReferrals = parseInt(document.getElementById('min-referrals').value);
             const paymentMethods = document.getElementById('payment-methods').value.split(',').map(s => s.trim()).filter(Boolean);
-            if (isNaN(minWithdrawal) || isNaN(dailyAdLimit) || isNaN(coinValueRupees) || isNaN(coinValueInr)) return showAlert("Kripya sabhi number fields mein valid number daalein.");
+            
+            if (isNaN(minWithdrawal) || isNaN(dailyAdLimit) || isNaN(coinValueRupees) || 
+                isNaN(coinValueInr) || isNaN(minReferrals)) {
+                return showAlert("Kripya sabhi number fields mein valid number daalein.");
+            }
+            
             try {
-                await setDoc(doc(db, "config", "main"), { minWithdrawal, dailyAdLimit, coinValueRupees, coinValueInr, paymentMethods }, { merge: true });
+                await setDoc(doc(db, "config", "main"), { 
+                    minWithdrawal, 
+                    dailyAdLimit, 
+                    coinValueRupees, 
+                    coinValueInr, 
+                    minReferralsForWithdrawal: minReferrals,
+                    paymentMethods 
+                }, { merge: true });
+                
                 showAlert("Settings safaltapoorvak save ho gayi hain!");
-            } catch (error) { showAlert(`Settings save karne mein error: ${error.message}`); }
+            } catch (error) { 
+                showAlert(`Settings save karne mein error: ${error.message}`); 
+            }
         }
         
         function showAlert(message) {
