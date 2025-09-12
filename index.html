@@ -648,22 +648,6 @@
                         referralEarnings: (referrerData.referralEarnings || 0) + 100,
                         totalReferrals: (referrerData.totalReferrals || 0) + 1
                     });
-
-                     // --- Share & Referral ---
-      function shareApp() {
-        if (!tgUser) return showToast("Could not get user data from Telegram.", "error");
-        
-        const botUsername = "gat_earn_money_bot";
-        const referralLink = `https://t.me/${botUsername}?start=${getUserRefCode()}`;
-        const text = `🎉 Join this amazing bot and start earning! Use my link to get a special bonus:`;
-        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
-        
-        if (window.Telegram && Telegram.WebApp) {
-          Telegram.WebApp.openTelegramLink(shareUrl);
-        } else {
-          showToast("Please share this link: " + referralLink, "info");
-        }
-      }
                     
                     // Update current user's data
                     const newUserRef = doc(db, "users", currentUser.uid);
@@ -841,7 +825,21 @@
         }
         window.showAlert = showAlert;
 
+         // --- Share & Referral ---
+      function shareApp() {
+        if (!tgUser) return showToast("Could not get user data from Telegram.", "error");
         
+        const botUsername = "gat_earn_money_bot";
+        const referralLink = `https://t.me/${botUsername}?start=${getUserRefCode()}`;
+        const text = `🎉 Join this amazing bot and start earning! Use my link to get a special bonus:`;
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
+        
+        if (window.Telegram && Telegram.WebApp) {
+          Telegram.WebApp.openTelegramLink(shareUrl);
+        } else {
+          showToast("Please share this link: " + referralLink, "info");
+        }
+      }
 
     </script>
 </body>
