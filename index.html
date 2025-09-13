@@ -227,27 +227,74 @@
                 </div>
                 
                 <!-- Earnings Summary -->
-                <div class="card-bg p-4 rounded-lg">
-                    <h3 class="font-semibold mb-3 text-center">Earnings Summary</h3>
-                    <div class="space-y-2">
-                        <div class="flex justify-between">
-                            <span>Available Balance:</span>
-                            <span class="font-bold"><span id="profile-balance">0</span> Rupees</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Today's Earnings:</span>
-                            <span class="font-bold"><span id="profile-today-earnings">0</span> Rupees</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Total Withdrawals:</span>
-                            <span class="font-bold"><span id="profile-total-withdrawals">0</span> Rupees</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Referral Earnings:</span>
-                            <span class="font-bold"><span id="profile-referral-earnings">0</span> Rupees</span>
-                        </div>
-                    </div>
-                </div>
+                 <!-- Earnings Summary -->
+<div style="background: linear-gradient(145deg, #1e1e1e, #2d2d2d); 
+            border: 1px solid #444; 
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.1); 
+            color: #f1f1f1; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            max-width: 400px; 
+            margin: auto;">
+
+    <h3 style="font-weight: 600; 
+               margin-bottom: 18px; 
+               text-align: center; 
+               font-size: 20px; 
+               letter-spacing: 0.5px; 
+               background: linear-gradient(90deg, #c0c0c0, #e0e0e0); 
+               -webkit-background-clip: text; 
+               -webkit-text-fill-color: transparent;">
+        Earnings Summary
+    </h3>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+
+        <div style="display: flex; justify-content: space-between; 
+                    padding: 10px 14px; 
+                    background: rgba(255,255,255,0.05); 
+                    border-radius: 10px; 
+                    transition: all 0.3s ease;">
+            <span>Available Balance:</span>
+            <span style="font-weight: bold; color: #00ff99;">
+                <span id="profile-balance">0</span> Rupees
+            </span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; 
+                    padding: 10px 14px; 
+                    background: rgba(255,255,255,0.05); 
+                    border-radius: 10px;">
+            <span>Today's Earnings:</span>
+            <span style="font-weight: bold; color: #ffd700;">
+                <span id="profile-today-earnings">0</span> Rupees
+            </span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; 
+                    padding: 10px 14px; 
+                    background: rgba(255,255,255,0.05); 
+                    border-radius: 10px;">
+            <span>Total Withdrawals:</span>
+            <span style="font-weight: bold; color: #ff6b6b;">
+                <span id="profile-total-withdrawals">0</span> Rupees
+            </span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; 
+                    padding: 10px 14px; 
+                    background: rgba(255,255,255,0.05); 
+                    border-radius: 10px;">
+            <span>Referral Earnings:</span>
+            <span style="font-weight: bold; color: #66b3ff;">
+                <span id="profile-referral-earnings">0</span> Rupees
+            </span>
+        </div>
+
+    </div>
+</div>
+
                 
                 <button id="logout-btn" class="w-full mt-6 p-3 rounded-lg bg-red-600 text-white font-bold">Logout</button>
             </div>
